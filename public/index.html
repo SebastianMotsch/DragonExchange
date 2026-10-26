@@ -1,18 +1,36 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>DragonExchange</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="script.js" defer></script>
-  </head>
-  <body>
-    <main>
-      <h1>DragonExchange</h1>
-      <p>Your project starts here.</p>
-      <button id="hello-button" type="button">Say hello</button>
-      <p id="message" aria-live="polite"></p>
-    </main>
-  </body>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="DragonExchange, a marketplace for Drexel students.">
+  <title>Home | DragonExchange</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script src="assets/js/script.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header>
+    <a class="brand" href="index.html">DragonExchange</a>
+    <nav aria-label="Main navigation">
+      <a href="index.html" aria-current="page">Home</a>
+      <a href="auctions/create.html">Sell</a>
+      <a href="account/dashboard.html">Dashboard</a>
+      <a href="account/profile.html">Profile</a>
+      <a href="auth/login.html">Login</a>
+    </nav>
+  </header>
+  <main id="main">
+    <h1>Home</h1>
+    <p>Buy and sell with other Drexel students.</p>
+    <h2>Recent listings</h2>
+    <p class="muted">Sample items</p>
+    <div class="items">
+      <article><h3>Calculus textbook</h3><p>Books · Good condition</p><p>Starting bid: $15.00</p></article>
+      <article><h3>Desk lamp</h3><p>Electronics · Used</p><p>Starting bid: $8.00</p></article>
+      <article><h3>Desk chair</h3><p>Furniture · Good condition</p><p>Starting bid: $25.00</p></article>
+    </div>
+  </main>
+
+</body>
 </html>
