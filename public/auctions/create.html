@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="DragonExchange, a marketplace for Drexel students.">
+  <title>Sell an item | DragonExchange</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <script src="../assets/js/script.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header>
+    <a class="brand" href="../index.html">DragonExchange</a>
+    <nav aria-label="Main navigation">
+      <a href="../index.html">Home</a>
+      <a href="create.html" aria-current="page">Sell</a>
+      <a href="../account/dashboard.html">Dashboard</a>
+      <a href="../account/profile.html">Profile</a>
+      <a href="../auth/login.html">Login</a>
+    </nav>
+  </header>
+  <main id="main">
+    <h1>Sell an item</h1>
+    <p>Add the details for your auction.</p>
+    <form data-demo-message="This is a placeholder. Your auction has not been published."><label>Title<input type="text" name="title"  required></label><label>Description<textarea name="description" rows="4" required></textarea></label><label>Photos<input type="file" name="photos" accept="image/*" multiple></label><label>Category<select name="category"><option>Books</option><option>Electronics</option><option>Furniture</option><option>Clothing</option><option>Other</option></select></label><label>Starting price ($)<input type="number" name="price" min="1" step="0.01" required></label><label>Bidding ends<input type="datetime-local" name="ends"  required></label><button type="submit">Create auction</button><p class="status" role="status"></p></form>
+  </main>
+
+</body>
+</html>
