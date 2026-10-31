@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Register for DragonExchange with your Drexel email.">
+  <title>Register | DragonExchange</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <script src="../assets/js/register.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header>
+    <a class="brand" href="../index.html">DragonExchange</a>
+    <nav aria-label="Main navigation">
+      <a href="../index.html">Home</a>
+      <a href="../auctions/create.html">Sell</a>
+      <a href="../account/dashboard.html">Dashboard</a>
+      <a href="../account/profile.html">Profile</a>
+      <a href="login.html">Login</a>
+      <a href="register.html" aria-current="page">Register</a>
+    </nav>
+  </header>
+  <main id="main">
+    <h1>Register</h1>
+    <p>Use your Drexel email and choose a password.</p>
+    <!-- test message [temp] -->
+    <p class="muted">Testing account creation</p>
+
+    <form id="register-form" method="post" novalidate>
+      <label for="register-email">Drexel email</label>
+      <input id="register-email" name="email" type="email" autocomplete="email" placeholder="you@drexel.edu" aria-describedby="email-error" required>
+      <p id="email-error" class="field-error" role="alert"></p>
+
+      <label for="register-password">Password</label>
+      <input id="register-password" name="password" type="password" autocomplete="new-password" aria-describedby="password-help password-error" required>
+      <p id="password-help" class="muted">Use at least 8 characters, one uppercase letter, one number, and one special character, such as ! or @.</p>
+      <p id="password-error" class="field-error" role="alert"></p>
+
+      <button type="submit">Check details</button>
+      <p id="register-status" class="status" role="status"></p>
+    </form>
+    <p>Already have an account? <a href="login.html">Log in</a>.</p>
+  </main>
+</body>
+</html>
