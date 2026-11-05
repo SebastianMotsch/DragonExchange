@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Create a DragonExchange account with your Drexel email.">
+  <title>Register | DragonExchange</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <script src="../assets/js/script.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header>
+    <a class="brand" href="../index.html">DragonExchange</a>
+    <nav aria-label="Main navigation">
+      <a href="../index.html">Home</a>
+      <a href="../auctions/create.html">Sell</a>
+      <a href="../account/dashboard.html">Dashboard</a>
+      <a href="../account/profile.html">Profile</a>
+      <a href="login.html">Login</a>
+    </nav>
+  </header>
+  <main id="main">
+    <h1>Create an account</h1>
+    <p>Register with your Drexel email.</p>
+    <form data-demo-message="Registration is not connected yet. No account has been created.">
+      <label>Display name
+        <input type="text" name="name" autocomplete="nickname" required>
+      </label>
+      <label>Drexel email
+        <input type="email" name="email" autocomplete="email" placeholder="you@drexel.edu" pattern="[^@\s]+@drexel\.edu" title="Use your @drexel.edu email address" required>
+      </label>
+      <label>Password (at least 8 characters)
+        <input type="password" name="password" autocomplete="new-password" minlength="8" required>
+      </label>
+      <button type="submit">Create account</button>
+      <p class="status" role="status"></p>
+    </form>
+    <p>Already have an account? <a href="login.html">Log in</a></p>
+  </main>
+</body>
+</html>
