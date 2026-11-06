@@ -26,6 +26,7 @@ if (process.env.DATABASE_URL && process.env.SESSION_SECRET) {
 }
 
 app.use("/auth", require("./routes/auth"));
+app.use("/api/auctions", require("./routes/auctions")(db));
 
 app.get("/health", (req, res) => res.send("ok"));
 
@@ -46,5 +47,8 @@ app.use((req, res) => {
   res.status(404).sendFile(path.join(publicDirectory, "404.html"));
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Running on http://localhost:${PORT}`));
+if (require.main === module) {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => console.log(`Running on http://localhost:${PORT}`));
+}
+module.exports = app;

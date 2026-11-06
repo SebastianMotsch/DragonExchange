@@ -6,7 +6,7 @@
   <meta name="description" content="DragonExchange, a marketplace for Drexel students.">
   <title>Sell an item | DragonExchange</title>
   <link rel="stylesheet" href="../assets/css/style.css">
-  <script src="../assets/js/script.js" defer></script>
+  <script src="../assets/js/auctions.js" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -23,7 +23,16 @@
   <main id="main">
     <h1>Sell an item</h1>
     <p>Add the details for your auction.</p>
-    <form data-demo-message="This is a placeholder. Your auction has not been published."><label>Title<input type="text" name="title"  required></label><label>Description<textarea name="description" rows="4" required></textarea></label><label>Photos<input type="file" name="photos" accept="image/*" multiple></label><label>Category<select name="category"><option>Books</option><option>Electronics</option><option>Furniture</option><option>Clothing</option><option>Other</option></select></label><label>Starting price ($)<input type="number" name="price" min="1" step="0.01" required></label><label>Bidding ends<input type="datetime-local" name="ends"  required></label><button type="submit">Create auction</button><p class="status" role="status"></p></form>
+    <p>You must be logged in with a verified account to publish an auction. Photo uploads will be added separately.</p>
+    <form id="auction-form">
+      <label>Title<input type="text" name="title" maxlength="120" required></label>
+      <label>Description<textarea name="description" rows="4" maxlength="5000" required></textarea></label>
+      <label>Category<select name="category"><option>Books</option><option>Electronics</option><option>Furniture</option><option>Clothing</option><option>Other</option></select></label>
+      <label>Starting price ($)<input type="number" name="price" min="0.01" max="21474836.47" step="0.01" required></label>
+      <label>Bidding ends (your local time)<input type="datetime-local" name="ends" required></label>
+      <button type="submit">Create auction</button>
+      <p class="status" role="status" aria-live="polite"></p>
+    </form>
   </main>
 
 </body>

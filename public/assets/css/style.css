@@ -22,6 +22,8 @@ button:hover, .button:hover { background: #555; color: #fff; }
 :focus-visible { outline: 3px solid #307bbd; outline-offset: 3px; }
 .items { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
 article, .panel { border: 1px solid #ddd; border-radius: 3px; padding: 1rem; }
+article { overflow-wrap: anywhere; }
+button:disabled { opacity: .6; cursor: wait; }
 article h3, .panel h2 { margin-top: .5rem; }
 .muted { color: #626262; }
 .status { padding: .75rem; background: #f3f3f3; }

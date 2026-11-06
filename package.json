@@ -6,7 +6,9 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node --watch server.js"
+    "dev": "node --watch server.js",
+    "test": "node --test",
+    "demo:auctions": "node scripts/demo-auctions.js"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",
@@ -15,5 +17,8 @@
     "express": "^5.3.0",
     "express-session": "^1.19.0",
     "pg": "^8.23.1"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.14"
   }
 }
