@@ -6,13 +6,17 @@ const nameError = document.getElementById("name-error");
 const emailError = document.getElementById("email-error");
 const passwordError = document.getElementById("password-error");
 const registerStatus = document.getElementById("register-status");
-
+const registerButton = document.getElementById("register-submit");
 
 registerForm.noValidate = true;
 registerForm.addEventListener("submit", checkRegistration);
 
-function checkRegistration(event) {
+async function checkRegistration(event) {
   event.preventDefault();
+
+  if (registerButton.disabled) {
+    return;
+  }
 
   nameError.textContent = "";
   emailError.textContent = "";
@@ -35,8 +39,8 @@ function checkRegistration(event) {
     valid = false;
   }
 
-  if (email === "" || emailInput.validity.typeMismatch || !email.endsWith("@drexel.edu")) {
-    emailError.textContent = "Enter a valid Drexel University email address.";
+  if (email === "" || emailInput.validity.typeMismatch || emailInput.validity.patternMismatch || !email.endsWith("@drexel.edu")) {
+    emailError.textContent = "Use a valid Drexel email with only letters and numbers before @drexel.edu.";
     emailInput.setAttribute("aria-invalid", "true");
     valid = false;
   }
@@ -77,5 +81,50 @@ function checkRegistration(event) {
     return;
   }
 
-  registerStatus.textContent = "Your details pass validation. Registration is not connected yet, so no account has been created.";
+  registerButton.disabled = true;
+  registerButton.textContent = "Creating account...";
+  registerStatus.textContent = "Submitting your registration...";
+
+  let requestSignal;
+  try {
+    requestSignal = AbortSignal.timeout(15000);
+    const response = await fetch("/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: name, email: email, password: password }),
+      signal: requestSignal
+    });
+
+    if (!response.ok) {
+      if (response.status === 409) {
+        registerStatus.textContent = "We couldn't create an account with this email. If you are already registered, try logging in.";
+      } else if (response.status === 400 || response.status === 422) {
+        registerStatus.textContent = "Check your name, Drexel email, and password requirements.";
+      } else if (response.status === 429) {
+        registerStatus.textContent = "Too many registration attempts. Please wait before trying again.";
+      } else if (response.status === 404 || response.status === 501) {
+        registerStatus.textContent = "Registration is not available yet.";
+      } else {
+        registerStatus.textContent = "Registration is temporarily unavailable. If you already submitted, try logging in before registering again.";
+      }
+      return;
+    }
+
+    const result = await response.json();
+    if (result && typeof result.message === "string" && result.message.trim() !== "") {
+      registerStatus.textContent = result.message;
+    } else {
+      registerStatus.textContent = "Your account was created. Make sure to verify your Drexel email to complete registration.";
+    }
+    passwordInput.value = "";
+  } catch {
+    if (requestSignal && requestSignal.aborted) {
+      registerStatus.textContent = "The request took too long. We couldn't confirm registration. Try logging in before registering again.";
+    } else {
+      registerStatus.textContent = "We couldn't confirm registration. Check your connection. If you already submitted, try logging in before registering again.";
+    }
+  } finally {
+    registerButton.disabled = false;
+    registerButton.textContent = "Create account";
+  }
 }

@@ -29,7 +29,7 @@
       </label>
       <p id="name-error" class="field-error"></p>
       <label for="register-email">Drexel email
-        <input id="register-email" type="email" name="email" autocomplete="email" placeholder="you@drexel.edu" pattern="[^@\s]+@drexel\.edu" title="Use your @drexel.edu email address" aria-describedby="email-error" required>
+        <input id="register-email" type="email" name="email" autocomplete="email" placeholder="abc123@drexel.edu" pattern="[A-Za-z0-9]+@drexel\.edu" title="Use only letters and numbers before @drexel.edu" aria-describedby="email-error" required>
       </label>
       <p id="email-error" class="field-error"></p>
       <label for="register-password">Password
@@ -37,7 +37,7 @@
       </label>
       <p id="password-help" class="muted">Use at least 8 characters, one uppercase letter, one number, and one special character.</p>
       <p id="password-error" class="field-error"></p>
-      <button type="submit">Create account</button>
+      <button id="register-submit" type="submit">Create account</button>
       <p id="register-status" class="status" role="status"></p>
     </form>
     <p>Already have an account? <a href="login.html">Log in</a></p>
