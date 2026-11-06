@@ -15,7 +15,6 @@ app.use(express.static(publicDirectory));
 if (process.env.DATABASE_URL && process.env.SESSION_SECRET) {
   app.use(
     session({
-      // Store sessions in Postgres so logins survive server restarts
       store: new PgSession({ pool: db, createTableIfMissing: true }),
       secret: process.env.SESSION_SECRET,
       resave: false,
@@ -29,7 +28,6 @@ app.use("/auth", require("./routes/auth"));
 
 app.get("/health", (req, res) => res.send("ok"));
 
-// Visit this to confirm the Supabase connection works
 app.get("/health/db", async (req, res) => {
   if (!process.env.DATABASE_URL) {
     return res.status(503).json({ connected: false, error: "DATABASE_URL is not configured" });
