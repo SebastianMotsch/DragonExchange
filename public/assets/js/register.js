@@ -1,41 +1,51 @@
 const registerForm = document.getElementById("register-form");
+const nameInput = document.getElementById("register-name");
 const emailInput = document.getElementById("register-email");
 const passwordInput = document.getElementById("register-password");
+const nameError = document.getElementById("name-error");
 const emailError = document.getElementById("email-error");
 const passwordError = document.getElementById("password-error");
 const registerStatus = document.getElementById("register-status");
 
+
+registerForm.noValidate = true;
 registerForm.addEventListener("submit", checkRegistration);
 
 function checkRegistration(event) {
- 
   event.preventDefault();
 
+  nameError.textContent = "";
   emailError.textContent = "";
   passwordError.textContent = "";
   registerStatus.textContent = "";
+  nameInput.setAttribute("aria-invalid", "false");
   emailInput.setAttribute("aria-invalid", "false");
   passwordInput.setAttribute("aria-invalid", "false");
 
-  const email = emailInput.value.trim();
+  const name = nameInput.value.trim();
+  const email = emailInput.value.trim().toLowerCase();
   const password = passwordInput.value;
+  nameInput.value = name;
+  emailInput.value = email;
   let valid = true;
 
-  if (email === "" || emailInput.validity.typeMismatch || !email.toLowerCase().endsWith("@drexel.edu")) {
-    emailError.textContent = "Registration is restricted to active Drexel University email addresses (@drexel.edu).";
+  if (name === "") {
+    nameError.textContent = "Enter your display name.";
+    nameInput.setAttribute("aria-invalid", "true");
+    valid = false;
+  }
+
+  if (email === "" || emailInput.validity.typeMismatch || !email.endsWith("@drexel.edu")) {
+    emailError.textContent = "Enter a valid Drexel University email address.";
     emailInput.setAttribute("aria-invalid", "true");
     valid = false;
   }
 
-
-  //password check [TEMP]
-  //need to encrypt password
   let hasUppercase = false;
   let hasNumber = false;
   let hasSpecial = false;
   const specialCharacters = "!@#$%^&*()-_=+[]{};:'\",.<>/?\\|`~";
 
-  
   for (let i = 0; i < password.length; i++) {
     const character = password[i];
 
@@ -57,7 +67,9 @@ function checkRegistration(event) {
   }
 
   if (!valid) {
-    if (emailError.textContent !== "") {
+    if (nameError.textContent !== "") {
+      nameInput.focus();
+    } else if (emailError.textContent !== "") {
       emailInput.focus();
     } else {
       passwordInput.focus();
@@ -65,6 +77,5 @@ function checkRegistration(event) {
     return;
   }
 
-  // Supabase signup will be connected after issue #20 is ready and Supabase is connected [TEMP]
-  registerStatus.textContent = "Passes validations so far";
+  registerStatus.textContent = "Your details pass validation. Registration is not connected yet, so no account has been created.";
 }
