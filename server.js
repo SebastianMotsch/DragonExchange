@@ -7,6 +7,15 @@ const db = require("./db");
 
 const app = express();
 app.use(express.json());
+
+// parse the json and return json if error
+app.use(function (error, req, res, next) {
+  if (error.type === "entity.parse.failed") {
+    return res.status(400).json({ error: "Send a valid JSON request." });
+  }
+  next(error);
+});
+
 const publicDirectory = path.join(__dirname, "public");
 app.use(express.static(publicDirectory));
 
