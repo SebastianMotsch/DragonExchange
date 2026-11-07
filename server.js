@@ -10,8 +10,6 @@ app.use(express.json());
 const publicDirectory = path.join(__dirname, "public");
 app.use(express.static(publicDirectory));
 
-// The static starter runs without database credentials. Enable persistent
-// sessions when the database and session secret have been configured.
 if (process.env.DATABASE_URL && process.env.SESSION_SECRET) {
   app.use(
     session({
@@ -25,6 +23,7 @@ if (process.env.DATABASE_URL && process.env.SESSION_SECRET) {
 }
 
 app.use("/auth", require("./routes/auth"));
+app.use("/listings", require("./routes/listings"));
 
 app.get("/health", (req, res) => res.send("ok"));
 
