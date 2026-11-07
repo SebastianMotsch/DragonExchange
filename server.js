@@ -44,5 +44,10 @@ app.use((req, res) => {
   res.status(404).sendFile(path.join(publicDirectory, "404.html"));
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Running on http://localhost:${PORT}`));
+// Tests import the app and start it on a temporary port.
+if (require.main === module) {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => console.log(`Running on http://localhost:${PORT}`));
+}
+
+module.exports = app;
