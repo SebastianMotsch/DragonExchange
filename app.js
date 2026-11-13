@@ -7,6 +7,8 @@ function createApp({
   sessionStore,
   sessionSecret = process.env.SESSION_SECRET,
   configured = () => Boolean(process.env.DATABASE_URL),
+  authRouter,
+  beforeStatic,
 }) {
   const app = express();
   if (process.env.NODE_ENV === "production") app.set("trust proxy", 1);
@@ -46,7 +48,7 @@ function createApp({
     app.locals.sessionMiddleware = middleware;
     app.use(middleware);
   }
-  app.use("/auth", require("./routes/auth")(db));
+  app.use("/auth", authRouter || require("./routes/auth"));
   app.use("/api/auctions", require("./routes/auctions")(db, configured));
   app.get("/api/wallet", async (req, res) => {
     res.set("Cache-Control", "no-store");
@@ -87,8 +89,6 @@ function createApp({
   app.get(
     [
       "/auctions/create.html",
-      "/account/dashboard.html",
-      "/account/profile.html",
     ],
     async (req, res, next) => {
       if (!req.session?.userId)
@@ -107,6 +107,7 @@ function createApp({
       }
     },
   );
+  if (beforeStatic) beforeStatic(app);
   app.use(express.static(publicDirectory));
   app.use((req, res) =>
     res.status(404).sendFile(path.join(publicDirectory, "404.html")),

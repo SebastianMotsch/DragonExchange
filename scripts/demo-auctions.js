@@ -30,6 +30,8 @@ async function start() {
     sessionStore: new session.MemoryStore(),
     sessionSecret: "local-demo-only-session-secret",
     configured: () => true,
+    authRouter: require("./demo-auth")(pool),
+    beforeStatic: require("./demo-pages"),
   });
   const { server, io } = createAuctionServer(app, pool);
   server.listen(3001, "127.0.0.1", () => {
@@ -42,7 +44,7 @@ async function start() {
       "Buyers each have $1,000 in demo funds. Use separate browser profiles for separate logins.",
     );
     console.log(
-      "Temporary database only; everything resets on exit. Newly registered accounts still require verification.",
+      "Temporary database only; everything resets on exit. Use the seeded accounts; registration is not part of this demo.",
     );
   });
   async function stop() {

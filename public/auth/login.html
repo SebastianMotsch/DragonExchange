@@ -6,7 +6,7 @@
   <meta name="description" content="DragonExchange, a marketplace for Drexel students.">
   <title>Login | DragonExchange</title>
   <link rel="stylesheet" href="../assets/css/style.css">
-  <script src="../assets/js/account.js" defer></script>
+  <script src="../assets/js/script.js" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -23,7 +23,7 @@
   <main id="main">
     <h1>Login</h1>
     <p>Log in with your Drexel email.</p>
-    <form id="login-form"><label>Drexel email<input type="email" name="email" autocomplete="email" placeholder="you@drexel.edu" required></label><label>Password<input type="password" name="password" autocomplete="current-password" required></label><button type="submit">Log in</button><p class="status" role="status" aria-live="polite"></p></form>
+    <form data-demo-message="Authentication is not connected yet."><label>Drexel email<input type="email" name="email" autocomplete="email" placeholder="you@drexel.edu" pattern="[^@\s]+@drexel\.edu" title="Use your @drexel.edu email address" required></label><label>Password<input type="password" name="password" minlength="8" autocomplete="current-password" required></label><button type="submit">Log in</button><p class="status" role="status"></p></form>
     <p>Don't have an account? <a href="register.html">Register</a></p>
   </main>
 

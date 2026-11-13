@@ -24,9 +24,9 @@ Open http://localhost:3000. `/health` checks the app; `/health/db` queries the c
 
 ## Accounts and auction creation
 
-Registration includes Edric's form, validation, bcrypt hashing, and unverified account insertion. This branch adds cookie login/logout, `GET /auth/me`, and protected auction/account pages.
+Edric's registration routes, form, and login page are included unchanged from his branch. Production login/logout and verification remain his integration work. This branch consumes the agreed `req.session.userId` interface, shares the session with auction sockets, and guards the auction-create page. It does not replace the account-page middleware or dashboard work.
 
-**Email verification delivery is still unfinished (#17).** Registration does not verify or automatically log in a user. Login currently requires a verified account. For a shared project demo, a project administrator must explicitly verify a known test account in Supabase after confirming its ownership; there is no public verification bypass. Use the isolated demo below for ready-made test accounts.
+**Production login and email verification are not complete in the published auth branch.** Normal `npm start` uses Edric's routes, including his existing TODOs. The authenticated auction flow is ready to consume his session once that work is merged. Use the isolated demo below to test auction behavior now; its auth adapter is confined to `scripts/` and is never mounted by the normal server.
 
 A verified seller opens Sell > Auction, supplies title, description, category, starting price, and a future deadline, and submits. The backend derives the seller from `req.session.userId` and rechecks verification. The saved auction opens on its detail page and appears in the homepage's most recent 50 non-cancelled auctions.
 
@@ -36,7 +36,7 @@ Prices are stored as integer cents. The form converts local deadlines to UTC; da
 
 The implementation adapts the professor's `../ws/ws/src/server.js` and `game.html` pattern: `createServer(app)`, `new Server(server)`, `socket.join(room)`, and `io.to(room).emit(...)`.
 
-It uses Socket.IO's WebSocket transport and shares Express's Postgres-backed login session. Session and verification checks reject unauthorized handshakes. Browser origins must match the app origin. Logout disconnects that session's sockets; active sockets also recheck session validity and account verification.
+It uses Socket.IO's WebSocket transport and shares Express's Postgres-backed login session. Session and verification checks reject unauthorized handshakes. Browser origins must match the app origin. Active sockets recheck session validity and verification. Edric's logout route can immediately disconnect a session with `req.app.locals.io?.in("session:" + req.sessionID).disconnectSockets(true)`; otherwise the periodic check detects a destroyed session.
 
 - `JOIN_AUCTION_ROOM { auctionId }` joins `auction:<id>` and acknowledges with current database state.
 - `LEAVE_AUCTION_ROOM` unsubscribes.
@@ -57,7 +57,7 @@ This is a single-backend implementation. Broadcasts are not durably replayed; su
 npm run demo:auctions
 ```
 
-Open http://127.0.0.1:3001. This separate loopback-only server uses an in-memory Postgres database and real cookie login, not your Supabase credentials.
+Open http://127.0.0.1:3001. This separate loopback-only server uses an in-memory Postgres database and a demo-only cookie-login adapter, not your Supabase credentials. The demo login page, session endpoints, and account controls live under `scripts/`; they do not change Edric's production auth files.
 
 | Account | Password | Initial demo balance |
 | --- | --- | --- |
@@ -72,7 +72,7 @@ These known credentials exist only in the temporary local demo. Use separate bro
 3. Check the available/reserved amounts after an outbid, refresh to verify persistence, and try a bid above the available balance.
 4. Log out and confirm the protected Sell page redirects to Login.
 
-Ctrl+C stops the server and discards demo data. Registration in the demo still creates unverified accounts; the three seeded accounts are explicitly verified fixtures.
+Ctrl+C stops the server and discards demo data. Use the three seeded accounts; registration is not part of this demo. They are explicitly verified test fixtures.
 
 ## API and access boundaries
 
@@ -80,7 +80,7 @@ Ctrl+C stops the server and discards demo data. Registration in the demo still c
 - `GET /api/auctions/:id`: public auction details or 404.
 - `POST /api/auctions`: verified-session creation; JSON and `X-Requested-With: DragonExchange` required.
 - `GET /api/wallet`: current session's total, reserved, and available balance.
-- `POST /auth/register`, `POST /auth/login`, `POST /auth/logout`, `GET /auth/me`: account endpoints. Login/logout require the same custom header.
+- `POST /auth/register`: Edric's existing registration endpoint. His login/logout/verification TODOs remain unchanged. The demo provides its own login/logout/current-user endpoints for isolated auction testing only.
 
 RLS is enabled on auctions, bids, and wallets with no browser API policies. All feature access goes through Express/Socket.IO and a trusted owner/BYPASSRLS database connection. Do not expose that connection or enable permissive CORS. Express sessions are not Supabase Auth JWTs; this implementation does not use Supabase Realtime.
 
@@ -90,8 +90,8 @@ RLS is enabled on auctions, bids, and wallets with no browser API policies. All 
 npm test
 ```
 
-Tests run without Supabase using isolated PGlite databases, real migrations, HTTP requests, bcrypt, cookie sessions, and multiple Socket.IO clients. They cover registration, authenticated auction creation, invalid input, ownership/verification, handshake rejection, room isolation, concurrent spending, duplicate requests, holds, reconnect state, logout, and RLS. PGlite serializes its single connection; true multi-connection locking must also be checked against Postgres.
+Tests run without Supabase using isolated PGlite databases, real migrations, HTTP requests, bcrypt, cookie sessions, and multiple Socket.IO clients. Edric's registration tests run unchanged. Auction tests use the demo auth adapter to cover authenticated creation, invalid input, ownership/verification, handshake rejection, room isolation, concurrent spending, duplicate requests, holds, reconnect state, logout, and RLS. They do not prove his eventual login/verification implementation works. PGlite serializes its single connection; true multi-connection locking must also be checked against Postgres.
 
-The integration work was additionally checked against the shared Supabase database using temporary test accounts/auctions, real HTTP sessions, socket broadcasts, and competing Postgres transactions. The test fixtures were removed afterward. Browser checks covered login, creation, two competing bidders, refresh, logout, and mobile layout.
+The auction/database work was additionally checked against shared Supabase using temporary verified test accounts, an auth adapter, real HTTP sessions, socket broadcasts, and competing Postgres transactions. The test fixtures were removed afterward. Browser checks used demo auth and covered creation, two competing bidders, refresh, logout, and mobile layout.
 
-Remaining integration work: real email verification, funding/deposits/withdrawals, auction cancellation/settlement, and team listing/photo/dashboard integration. This branch includes main plus Edric's registration branch; Steven's fixed-price backend and Sebastian's photo helpers are not merged here.
+Remaining integration work: Edric's actual login/verification/logout, funding/deposits/withdrawals, auction cancellation/settlement, and team listing/photo/dashboard integration. This branch includes main plus Edric's existing registration commits; Steven's fixed-price backend and Sebastian's photo helpers are not merged here. Shared integration files (`server.js`, `app.js`, homepage, and package manifests) will still need coordination when those branches merge.

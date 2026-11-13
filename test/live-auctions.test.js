@@ -19,6 +19,17 @@ let db,
   cookies = {};
 const sockets = [];
 const root = path.join(__dirname, "..");
+test("normal app does not expose the demo auth files", async () => {
+  const normal = createApp({ db: pool, configured: () => false });
+  const listener = normal.listen(0, "127.0.0.1");
+  await new Promise(resolve => listener.once("listening", resolve));
+  const address = "http://127.0.0.1:" + listener.address().port;
+  try {
+    assert.equal((await fetch(address + "/__demo/account.js")).status, 404);
+    const loginHtml = await (await fetch(address + "/auth/login.html")).text();
+    assert.doesNotMatch(loginHtml, /__demo/);
+  } finally { await new Promise(resolve => listener.close(resolve)); }
+});
 before(async () => {
   db = new PGlite();
   await db.exec(fs.readFileSync(path.join(root, "sql/schema.sql"), "utf8"));
@@ -48,6 +59,7 @@ before(async () => {
     sessionStore: new session.MemoryStore(),
     sessionSecret: "test-session-secret",
     configured: () => true,
+    authRouter: require("../scripts/demo-auth")(pool),
   });
   ({ server, io } = createAuctionServer(app, pool));
   server.listen(0, "127.0.0.1");
@@ -118,7 +130,7 @@ const bid = (id, amount, requestId = randomUUID()) => ({
   amount,
   requestId,
 });
-test("login, session cookie, protected page, and logout", async () => {
+test("demo auth adapter supplies cookie sessions for isolated auction tests", async () => {
   const r = await request("/auth/login", {
     email: "buyer@drexel.edu",
     password: "wrong",
