@@ -19,6 +19,7 @@ before(async () => {
   const migration = fs.readFileSync(path.join(__dirname, '../sql/migrations/001_auctions.sql'), 'utf8');
   await db.exec(migration);
   await db.exec(migration); // Repeatable migration must not lose data or fail.
+  await db.exec(fs.readFileSync(path.join(__dirname, '../sql/migrations/002_live_bidding.sql'), 'utf8'));
   await db.query("INSERT INTO users (email,password_hash,verified) VALUES ('seller@drexel.edu','test-only',true), ('pending@drexel.edu','test-only',false)");
   const app = express();
   app.use(express.json());

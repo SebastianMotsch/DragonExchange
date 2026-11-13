@@ -1,82 +1,97 @@
 # DragonExchange
 
-A simple starter for a Drexel student auction marketplace, using Express and plain HTML, CSS, and JavaScript.
+A Drexel student marketplace using Express, plain HTML/CSS/JavaScript, and Supabase-hosted Postgres.
 
-## Run locally
+## Run with Supabase
 
 ```bash
-npm install
+npm ci
+npm run db:migrate
 npm start
 ```
 
-Open **http://localhost:3000**. Press Ctrl+C to stop. Use `npm run dev` to restart automatically when server files change.
+Before migrating, copy `.env.example` to the Git-ignored `.env` and set:
 
-## Pages
+- `DATABASE_URL`: Supabase Dashboard > Connect. Direct works with IPv6; session pooler also works from IPv4 networks. Replace the password placeholder and percent-encode reserved characters.
+- `SESSION_SECRET`: a long random value. Generate one with `node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"`.
+- `PORT`: defaults to 3000.
+- `APP_ORIGIN` (optional): the exact public origin, such as `https://example.com`, when deploying behind a proxy.
+- `NODE_ENV=production` on an HTTPS deployment enables Secure session cookies. The app trusts one proxy hop in production; match this to the hosting topology.
 
-- Home: `public/index.html`
-- Sell: `public/auctions/create.html`
-- Dashboard: `public/account/dashboard.html`
-- Profile: `public/account/profile.html`
-- Login: `public/auth/login.html`
-- Registration (linked from Login): `public/auth/register.html`
+Apply `sql/schema.sql` once for a new project before `npm run db:migrate`. Migrations create the auction, bid, and wallet structures without clearing existing data. They expect the existing integer `users.id` and boolean `users.verified`.
 
-Shared styles and JavaScript live in `public/assets/`. Express serves `public/` as the website root and uses `public/404.html` for missing pages. Backend files stay outside `public/`.
+Open http://localhost:3000. `/health` checks the app; `/health/db` queries the configured database. Credentials remain on the server; no Supabase service key is needed in the browser.
 
-The homepage and auction detail page read saved auctions from the backend. The sell form creates auctions for verified, logged-in users. Authentication routes are still placeholders on main, so creating an auction through the browser depends on the registration/login work being integrated. Profile/dashboard details are still sample data. Bidding, photos, and payments are separate stories.
+## Accounts and auction creation
 
-The pages run without a database or `.env` file. To enable the existing database and session setup later, copy `.env.example` to `.env` and fill in `DATABASE_URL` and `SESSION_SECRET`. `PORT` defaults to `3000`.
+Registration includes Edric's form, validation, bcrypt hashing, and unverified account insertion. This branch adds cookie login/logout, `GET /auth/me`, and protected auction/account pages.
 
-`/health` checks the server. `/health/db` checks the database when configured.
+**Email verification delivery is still unfinished (#17).** Registration does not verify or automatically log in a user. Login currently requires a verified account. For a shared project demo, a project administrator must explicitly verify a known test account in Supabase after confirming its ownership; there is no public verification bypass. Use the isolated demo below for ready-made test accounts.
 
-## Auction setup (story #13)
+A verified seller opens Sell > Auction, supplies title, description, category, starting price, and a future deadline, and submits. The backend derives the seller from `req.session.userId` and rechecks verification. The saved auction opens on its detail page and appears in the homepage's most recent 50 non-cancelled auctions.
 
-1. Copy `.env.example` to `.env` (ignored by Git). In Supabase Dashboard > Connect, copy the Postgres connection string, preferably the session pooler if direct IPv6 connectivity is unavailable. Set `DATABASE_URL` with the database password and set `SESSION_SECRET` to a long random value. Never put either secret in browser code.
-2. In the Supabase SQL Editor, apply `sql/schema.sql`, then `sql/migrations/001_auctions.sql`. These scripts create missing tables without clearing existing records. Check the deployed users table still uses integer `id` and boolean `verified` before applying.
-3. Restart the app and check `/health/db`. Open the homepage to see saved auctions; an empty database shows an empty state.
-4. Once the auth routes are integrated, log in as a verified user, open Sell, submit an auction, and follow the redirect to its details. The homepage shows the most recent 50 auctions.
+Prices are stored as integer cents. The form converts local deadlines to UTC; database timestamps include time zones. Invalid fields return readable errors. Photo uploads, condition fields, fixed-price listings, and listing editing remain in their respective team branches/stories.
 
-The backend uses the existing Express session field `req.session.userId` and rechecks `users.verified` during insertion. No test login or authentication bypass is shipped. Sebastian's middleware can replace/consolidate the route guard when integrated. It should also guard the sell page before static serving if page-level protection is desired.
+## Live bidding
 
-### API
+The implementation adapts the professor's `../ws/ws/src/server.js` and `game.html` pattern: `createServer(app)`, `new Server(server)`, `socket.join(room)`, and `io.to(room).emit(...)`.
 
-- `GET /api/auctions` → `{ auctions: [...] }`, newest first, up to 50 non-cancelled auctions.
-- `GET /api/auctions/:id` → `{ auction: {...} }`, or 404.
-- `POST /api/auctions` → 201 and `{ auction: {...} }`. Requires a verified session, JSON content type, and `X-Requested-With: DragonExchange`. Do not enable permissive cross-origin access to this endpoint.
+It uses Socket.IO's WebSocket transport and shares Express's Postgres-backed login session. Session and verification checks reject unauthorized handshakes. Browser origins must match the app origin. Logout disconnects that session's sockets; active sockets also recheck session validity and account verification.
 
-Create payload:
+- `JOIN_AUCTION_ROOM { auctionId }` joins `auction:<id>` and acknowledges with current database state.
+- `LEAVE_AUCTION_ROOM` unsubscribes.
+- `PLACE_BID { auctionId, amount, requestId }` uses a decimal amount string and a UUID request ID. Its private acknowledgement reports acceptance or rejection.
+- `BID_ACCEPTED` broadcasts committed public auction state only to that room. `AUCTION_STATE` periodically reconciles missed updates and deadline status.
 
-```json
-{
-  "title": "Calculus textbook",
-  "description": "Used for one term.",
-  "category": "Books",
-  "startingPrice": "15.00",
-  "endsAt": "2030-06-01T18:00:00.000Z"
-}
-```
+The client subscribes then reconciles state by version, reconnects with capped backoff/jitter, and disables bidding while disconnected. Retrying an unconfirmed bid reuses its request ID to avoid creating a second bid.
 
-Use a future deadline. Prices are decimal strings on input and integer cents in storage; the server derives the seller and initial status. The form converts the user's local time to UTC. Supported categories are Books, Electronics, Furniture, Clothing, and Other. The API returns field errors for invalid inputs, 401 for missing sessions, 403 for ineligible users, and 503 when the database is unavailable.
+Each bid uses one database transaction/client: lock the auction, then affected wallets in user-ID order; validate the deadline, account, price, ownership, and available balance; reserve/release funds; record the bid; update the public state; commit; broadcast. The seller cannot bid on their own auction. The first bid must meet the starting price. Following bids currently require the auction's `min_increment_cents` (default 100 cents); coordinate that default with #9.
 
-RLS is enabled on `auctions` with no browser API policies. All reads/writes currently go through Express using a trusted database owner/BYPASSRLS connection. Never expose that connection to the browser; a restricted database role will need a deliberately configured backend access policy. This migration does not configure Supabase Auth or Realtime.
+A leading bid reserves funds. Being outbid releases the prior hold, while raising your own leading bid holds only the extra amount. Different auctions cannot spend the same available funds. Wallets default to zero; there is no public balance-edit or free-funding endpoint. Stripe/test funding remains #14, and the full wallet ledger remains #24.
 
-Until bidding/lifecycle stories are implemented, auctions show "No bids yet" and an expired active auction reads as ended. This is a display calculation, not persisted closing or settlement. Photos, condition, editing/removal, bidding, scheduled processing, and wallet transfers remain in their own stories.
+This is a single-backend implementation. Broadcasts are not durably replayed; subscription snapshots and periodic refresh recover current state. Bid throttling is in-process (one attempt per user per 500ms). Scheduled settlement (#11/#25) and cancellation (#10) remain unfinished. An expired auction displays ended and rejects bids, but its leading hold stays reserved pending settlement; there is no automatic transfer/release yet.
 
-## Checks
-
-To manually test auction creation before the auth routes are merged:
+## Manual demo without shared data
 
 ```bash
 npm run demo:auctions
 ```
 
-Open http://127.0.0.1:3001 and use Sell. This separate, loopback-only server supplies a verified test identity and an in-memory database; it never loads your Supabase credentials. Create an auction with a future end time, check the redirect/detail page, then return Home and refresh to see the saved listing. Try an invalid price or past deadline and confirm that nothing is saved.
+Open http://127.0.0.1:3001. This separate loopback-only server uses an in-memory Postgres database and real cookie login, not your Supabase credentials.
 
-Stop with Ctrl+C; all demo auctions disappear. Restart with `npm run demo:auctions -- --unverified` or `npm run demo:auctions -- --anonymous` to check rejection feedback. The fixture does not exercise real login/logout. Normal `npm start` continues to use real sessions and Supabase.
+| Account | Password | Initial demo balance |
+| --- | --- | --- |
+| seller@drexel.edu | DemoPass123! | $0 |
+| buyer@drexel.edu | DemoPass123! | $1,000 |
+| other@drexel.edu | DemoPass123! | $1,000 |
+
+These known credentials exist only in the temporary local demo. Use separate browser profiles (or normal/private windows) for separate users:
+
+1. Log in as seller, open Sell > Auction, and create an auction with a future deadline.
+2. Open its detail URL as buyer and other. Place competing bids and confirm both windows update without refreshing.
+3. Check the available/reserved amounts after an outbid, refresh to verify persistence, and try a bid above the available balance.
+4. Log out and confirm the protected Sell page redirects to Login.
+
+Ctrl+C stops the server and discards demo data. Registration in the demo still creates unverified accounts; the three seeded accounts are explicitly verified fixtures.
+
+## API and access boundaries
+
+- `GET /api/auctions`: most recent 50 non-cancelled auctions.
+- `GET /api/auctions/:id`: public auction details or 404.
+- `POST /api/auctions`: verified-session creation; JSON and `X-Requested-With: DragonExchange` required.
+- `GET /api/wallet`: current session's total, reserved, and available balance.
+- `POST /auth/register`, `POST /auth/login`, `POST /auth/logout`, `GET /auth/me`: account endpoints. Login/logout require the same custom header.
+
+RLS is enabled on auctions, bids, and wallets with no browser API policies. All feature access goes through Express/Socket.IO and a trusted owner/BYPASSRLS database connection. Do not expose that connection or enable permissive CORS. Express sessions are not Supabase Auth JWTs; this implementation does not use Supabase Realtime.
+
+## Verification
 
 ```bash
 npm test
 ```
 
-Tests use an isolated in-memory Postgres engine (PGlite, development dependency only), the real migration, and HTTP requests to the auction router. They cover validation, cents/UTC storage, session/verification checks, seller spoofing, create/list/detail, expiry display, and default-deny RLS. Session fixtures exist only inside the test process. They do not contact Supabase or prove the unfinished login routes work.
+Tests run without Supabase using isolated PGlite databases, real migrations, HTTP requests, bcrypt, cookie sessions, and multiple Socket.IO clients. They cover registration, authenticated auction creation, invalid input, ownership/verification, handshake rejection, room isolation, concurrent spending, duplicate requests, holds, reconnect state, logout, and RLS. PGlite serializes its single connection; true multi-connection locking must also be checked against Postgres.
 
-Manual integration check after credentials and auth are available: create a verified-account auction, confirm it in Supabase and on both pages, then try a past date, invalid price, logged-out submission, and unverified-account submission. Check missing auction IDs and database-unavailable feedback too.
+The integration work was additionally checked against the shared Supabase database using temporary test accounts/auctions, real HTTP sessions, socket broadcasts, and competing Postgres transactions. The test fixtures were removed afterward. Browser checks covered login, creation, two competing bidders, refresh, logout, and mobile layout.
+
+Remaining integration work: real email verification, funding/deposits/withdrawals, auction cancellation/settlement, and team listing/photo/dashboard integration. This branch includes main plus Edric's registration branch; Steven's fixed-price backend and Sebastian's photo helpers are not merged here.
