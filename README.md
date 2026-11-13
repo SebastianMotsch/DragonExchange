@@ -18,6 +18,7 @@ Open **http://localhost:3000**. Press Ctrl+C to stop. Use `npm run dev` to resta
 - Dashboard: `public/account/dashboard.html`
 - Profile: `public/account/profile.html`
 - Login: `public/auth/login.html`
+- Registration (linked from Login): `public/auth/register.html`
 
 Shared styles and JavaScript live in `public/assets/`. Express serves `public/` as the website root and uses `public/404.html` for missing pages. Backend files stay outside `public/`.
 
