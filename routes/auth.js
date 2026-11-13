@@ -1,7 +1,10 @@
 const express = require("express");
+const bcrypt = require("bcrypt");
+const db = require("../db");
 const router = express.Router();
+const saltRounds = 12;
 
-router.post("/register", function (req, res) {
+router.post("/register", async function (req, res) {
   if (!req.body || typeof req.body.name !== "string" || typeof req.body.email !== "string" || typeof req.body.password !== "string") {
     return res.status(400).json({ error: "Name, email, and password are required and must be text." });
   }
@@ -50,8 +53,31 @@ router.post("/register", function (req, res) {
     return res.status(422).json({ error: "Use at least 8 characters, one uppercase letter, one number, and one special character." });
   }
 
-  // TODO: Hash the password, save an unverified account, and trigger verification.
-  return res.status(501).json({ error: "Account creation is not implemented yet. Make sure to come back to this after hashing, saving the account, and triggering verification." });
+  // bcrypt only uses the first 72 bytes
+  if (Buffer.byteLength(password, "utf8") > 72) {
+    return res.status(422).json({ error: "Password must be 72 bytes or fewer." });
+  }
+
+  try {
+    const passwordHash = await bcrypt.hash(password, saltRounds);
+
+    const result = await db.query(
+      `INSERT INTO users (name, email, password_hash, verified)
+       VALUES ($1, $2, $3, false)
+       ON CONFLICT (email) DO NOTHING
+       RETURNING id`,
+      [name, email, passwordHash]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(409).json({ error: "We couldn't create an account with this email. If you are already registered, try logging in." });
+    }
+
+    // TODO: Trigger the email verification flow from issue #17.
+    return res.status(201).json({ message: "Your account was created and requires email verification before using marketplace features." });
+  } catch {
+    return res.status(500).json({ error: "Registration is temporarily unavailable. Please try again." });
+  }
 });
 
 // TODO: POST /verify    - check code, set verified = true
