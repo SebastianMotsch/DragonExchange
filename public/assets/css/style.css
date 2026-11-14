@@ -26,6 +26,9 @@ article h3, .panel h2 { margin-top: .5rem; }
 .muted { color: #626262; }
 .status { padding: .75rem; background: #f3f3f3; }
 .status:empty { display: none; }
+.field-error { color: #a01818; }
+.field-error:empty { display: none; }
+input[aria-invalid="true"] { border-color: #a01818; }
 .skip-link { position: absolute; left: 1rem; top: -100px; background: white; padding: .5rem; }
 .skip-link:focus { top: 0; }
 @media (max-width: 650px) {

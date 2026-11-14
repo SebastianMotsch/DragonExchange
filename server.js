@@ -7,6 +7,15 @@ const db = require("./db");
 
 const app = express();
 app.use(express.json());
+
+// parse the json and return json if error
+app.use(function (error, req, res, next) {
+  if (error.type === "entity.parse.failed") {
+    return res.status(400).json({ error: "Send a valid JSON request." });
+  }
+  next(error);
+});
+
 const publicDirectory = path.join(__dirname, "public");
 app.use(express.static(publicDirectory));
 
@@ -44,5 +53,10 @@ app.use((req, res) => {
   res.status(404).sendFile(path.join(publicDirectory, "404.html"));
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Running on http://localhost:${PORT}`));
+// Tests import the app and start it on a temporary port.
+if (require.main === module) {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => console.log(`Running on http://localhost:${PORT}`));
+}
+
+module.exports = app;
