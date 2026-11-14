@@ -1,4 +1,4 @@
-const { test, before, after } = require("node:test");
+const { test, before, beforeEach, after } = require("node:test");
 const assert = require("node:assert/strict");
 const { once } = require("node:events");
 const bcrypt = require("bcrypt");
@@ -9,6 +9,7 @@ process.env.SESSION_SECRET = "";
 
 const app = require("../server");
 const db = require("../db");
+const registrationLimiter = require("../middleware/registration-limiter");
 let server;
 let baseUrl;
 let databaseQueries = 0;
@@ -22,6 +23,13 @@ before(async function () {
   server = app.listen(0, "127.0.0.1");
   await once(server, "listening");
   baseUrl = "http://127.0.0.1:" + server.address().port;
+});
+
+beforeEach(async function () {
+  // Give each test its own allowance without disabling production protection.
+  for (const email of ["student@drexel.edu", "abc123@drexel.edu", "12345@drexel.edu", "secondstudent@drexel.edu"]) {
+    await registrationLimiter.resetKey(email);
+  }
 });
 
 after(async function () {
@@ -51,7 +59,11 @@ async function register(body) {
     body: JSON.stringify(body)
   });
   assert.match(response.headers.get("content-type"), /application\/json/);
-  return { status: response.status, body: await response.json() };
+  return {
+    status: response.status,
+    body: await response.json(),
+    retryAfter: response.headers.get("retry-after")
+  };
 }
 
 for (const body of [null, [], {}, true, 123, "text"]) {
@@ -227,7 +239,8 @@ for (const password of ["A1!" + "a".repeat(70), "A1!" + "é".repeat(35)]) {
 
     const result = await register(body);
     assert.equal(result.status, 422);
-    assert.match(result.body.error, /72 bytes/);
+    assert.equal(result.body.code, "PASSWORD_TOO_LONG");
+    assert.equal(result.body.error, "Your password is too long. Shorten it and try again.");
     assert.equal(hashPassword.mock.callCount(), 0);
   });
 }
@@ -310,4 +323,145 @@ test("rejects malformed JSON without echoing request contents", async function (
   });
   assert.equal(response.status, 400);
   assert.deepEqual(await response.json(), { error: "Send a valid JSON request." });
+});
+
+test("limits repeated attempts by normalized email, allowing other students on the same IP", async function (t) {
+  const insertAccount = t.mock.method(db, "query", async function () {
+    return { rowCount: 0, rows: [] };
+  });
+  const hashPassword = t.mock.method(bcrypt, "hash", async function () {
+    return "test-hash";
+  });
+  const body = validRegistration();
+
+  for (let i = 0; i < 5; i++) {
+    if (i % 2 === 0) {
+      body.email = "student@drexel.edu";
+    } else {
+      body.email = " STUDENT@DREXEL.EDU ";
+    }
+    const result = await register(body);
+    assert.equal(result.status, 409);
+  }
+  const blocked = await register(body);
+  assert.equal(blocked.status, 429);
+  assert.match(blocked.body.error, /with this email/);
+  assert.ok(Number(blocked.retryAfter) > 0);
+  assert.equal(hashPassword.mock.callCount(), 5);
+  assert.equal(insertAccount.mock.callCount(), 5);
+
+  // All these requests come from 127.0.0.1, just as campus students can share an IP.
+  for (let i = 0; i < 6; i++) {
+    body.email = "campusstudent" + i + "@drexel.edu";
+    const result = await register(body);
+    assert.equal(result.status, 409);
+  }
+  assert.equal(hashPassword.mock.callCount(), 11);
+});
+
+test("bounds simultaneous hashing even if a client disconnects, then accepts requests when work finishes", { timeout: 10000 }, async function (t) {
+  const http = require("node:http");
+
+  // Wait until four registrations are hashing before testing the capacity limit.
+  let notifyAllStarted;
+  const allStarted = new Promise(function (resolve) {
+    notifyAllStarted = resolve;
+  });
+
+  // Keep hashing paused so all four slots stay occupied during the check.
+  let allowHashingToFinish;
+  const hashingCanFinish = new Promise(function (resolve) {
+    allowHashingToFinish = resolve;
+  });
+
+  let started = 0;
+  const insertAccount = mockAccountInsert(t);
+  const hashPassword = t.mock.method(bcrypt, "hash", async function () {
+    started++;
+    if (started === 4) {
+      notifyAllStarted();
+    }
+    await hashingCanFinish;
+    return "test-hash";
+  });
+
+  const disconnected = http.request(baseUrl + "/auth/register", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" }
+  });
+  disconnected.on("error", function () {
+    // Closing this client deliberately produces a connection error.
+  });
+  const disconnectedBody = validRegistration();
+  disconnectedBody.email = "disconnected@drexel.edu";
+  disconnected.end(JSON.stringify(disconnectedBody));
+
+  const pending = [];
+  for (let i = 0; i < 3; i++) {
+    const body = validRegistration();
+    body.email = "simultaneous" + i + "@drexel.edu";
+    // Do not await yet: these registrations need to run at the same time.
+    pending.push(register(body));
+  }
+
+  let completed;
+  try {
+    await allStarted;
+    const closed = new Promise(function (resolve) {
+      disconnected.once("close", resolve);
+    });
+    disconnected.destroy();
+    await closed;
+
+    // Disconnecting the client must not free its slot while hashing is paused.
+    const busyBody = validRegistration();
+    busyBody.email = "busy@drexel.edu";
+    const blocked = await register(busyBody);
+    assert.equal(blocked.status, 503);
+    assert.equal(blocked.body.code, "REGISTRATION_BUSY");
+    assert.equal(blocked.retryAfter, "1");
+    assert.equal(hashPassword.mock.callCount(), 4);
+    assert.equal(insertAccount.mock.callCount(), 0);
+  } finally {
+    disconnected.destroy();
+    allowHashingToFinish();
+    completed = await Promise.all(pending);
+  }
+  for (const result of completed) {
+    assert.equal(result.status, 201);
+  }
+  assert.equal(insertAccount.mock.callCount(), 4);
+
+  const recoveredBody = validRegistration();
+  recoveredBody.email = "recovered@drexel.edu";
+  const recovered = await register(recoveredBody);
+  assert.equal(recovered.status, 201);
+});
+
+test("hashing and database failures release registration slots", async function (t) {
+  let failure = "hash";
+  t.mock.method(bcrypt, "hash", async function () {
+    if (failure === "hash") {
+      throw new Error("Hashing failed");
+    }
+    return "test-hash";
+  });
+  t.mock.method(db, "query", async function () {
+    if (failure === "database") {
+      throw new Error("Database failed");
+    }
+    return { rowCount: 1, rows: [{ id: 1 }] };
+  });
+  for (const stage of ["hash", "database"]) {
+    failure = stage;
+    for (let i = 0; i < 6; i++) {
+      const body = validRegistration();
+      body.email = stage + i + "@drexel.edu";
+      const result = await register(body);
+      assert.equal(result.status, 500);
+    }
+  }
+  failure = null;
+  const result = await register(validRegistration());
+  assert.equal(result.status, 201);
 });
