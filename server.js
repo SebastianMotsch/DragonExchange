@@ -24,6 +24,7 @@ if (process.env.DATABASE_URL && process.env.SESSION_SECRET) {
 
 app.use("/auth", require("./routes/auth"));
 app.use("/listings", require("./routes/listings"));
+app.use("/purchases", require("./routes/purchases")({ db }));
 
 app.get("/health", (req, res) => res.send("ok"));
 

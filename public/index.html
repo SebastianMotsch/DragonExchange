@@ -6,7 +6,7 @@
   <meta name="description" content="DragonExchange, a marketplace for Drexel students.">
   <title>Home | DragonExchange</title>
   <link rel="stylesheet" href="assets/css/style.css">
-  <script src="assets/js/script.js" defer></script>
+  <script src="assets/js/home.js" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -24,12 +24,9 @@
     <h1>Home</h1>
     <p>Buy and sell with other Drexel students.</p>
     <h2>Recent listings</h2>
-    <p class="muted">Sample items</p>
-    <div class="items">
-      <article><h3>Calculus textbook</h3><p>Books · Good condition</p><p>Starting bid: $15.00</p></article>
-      <article><h3>Desk lamp</h3><p>Electronics · Used</p><p>Starting bid: $8.00</p></article>
-      <article><h3>Desk chair</h3><p>Furniture · Good condition</p><p>Starting bid: $25.00</p></article>
-    </div>
+    <p id="recent-listings-status" role="status">Loading recent listings…</p>
+    <div id="recent-listings" class="items" aria-busy="true"></div>
+    <noscript><p>Enable JavaScript to see recent listings.</p></noscript>
   </main>
 
 </body>

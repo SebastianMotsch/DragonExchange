@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Review your item before purchasing on DragonExchange.">
+  <title>Review purchase | DragonExchange</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <script src="../assets/js/purchase.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header>
+    <a class="brand" href="../index.html">DragonExchange</a>
+    <nav aria-label="Main navigation">
+      <a href="../index.html">Home</a>
+      <a href="../auctions/create.html">Sell</a>
+      <a href="../account/dashboard.html">Dashboard</a>
+      <a href="../account/profile.html">Profile</a>
+      <a href="../auth/login.html">Login</a>
+    </nav>
+  </header>
+  <main id="main">
+    <h1>Review purchase</h1>
+    <p id="purchase-status" role="status">Loading your item…</p>
+    <p id="purchase-preview" class="status" hidden>This is your listing. You are previewing the purchase page as a buyer.</p>
+    <p id="purchase-login" hidden><a href="../auth/login.html">Log in</a> or <a href="../auth/register.html">sign up</a> to purchase this item.</p>
+    <section id="purchase-receipt" class="panel" aria-labelledby="purchase-receipt-heading" hidden>
+      <h2 id="purchase-receipt-heading">Purchase confirmed</h2>
+      <p>Order #<span id="purchase-order-id"></span></p>
+      <p>The item is marked sold. Arrange payment and pickup directly with the seller; no online payment has been taken.</p>
+      <p><a href="../account/dashboard.html">View My purchases on your dashboard</a></p>
+    </section>
+    <div id="purchase-details" hidden>
+      <p><a id="purchase-back" href="../index.html">Back to listing</a></p>
+      <div class="purchase-layout">
+        <section class="panel listing-detail" aria-labelledby="purchase-title">
+          <div class="listing-image-placeholder" role="img" aria-label="Listing photo placeholder: no photos yet">No photos yet</div>
+          <h2 id="purchase-title"></h2>
+          <p><strong>Seller:</strong> <span id="purchase-seller"></span></p>
+          <p><strong>Category:</strong> <span id="purchase-category"></span></p>
+          <p id="purchase-description"></p>
+        </section>
+        <section class="panel" aria-labelledby="purchase-summary-heading">
+          <h2 id="purchase-summary-heading">Order summary</h2>
+          <p>Quantity: 1</p>
+          <p><strong>Item price:</strong> <span id="purchase-price"></span></p>
+          <p><strong>Item total:</strong> <span id="purchase-total"></span></p>
+          <h3>Pickup</h3>
+          <p>Arrange a pickup time and location with the seller.</p>
+          <h3>Payment</h3>
+          <p id="purchase-help">Confirming records your purchase and marks this item sold. Arrange payment directly with the seller. No online payment will be taken.</p>
+          <button id="confirm-purchase" type="button" disabled aria-describedby="purchase-help">Confirm purchase</button>
+        </section>
+      </div>
+    </div>
+    <noscript><p>Enable JavaScript to review this purchase.</p></noscript>
+  </main>
+</body>
+</html>
