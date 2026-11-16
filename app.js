@@ -50,6 +50,7 @@ function createApp({
   }
   app.use("/auth", authRouter || require("./routes/auth"));
   app.use("/api/auctions", require("./routes/auctions")(db, configured));
+  app.use("/api/account", require("./routes/account")(db));
   app.get("/api/wallet", async (req, res) => {
     res.set("Cache-Control", "no-store");
     if (!req.session?.userId)

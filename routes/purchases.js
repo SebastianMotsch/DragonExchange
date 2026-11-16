@@ -18,7 +18,8 @@ module.exports = function createPurchasesRouter({ db }) {
          LEFT JOIN users buyer ON buyer.id = p.buyer_id
          LEFT JOIN users seller ON seller.id = p.seller_id
          WHERE p.buyer_id = $1 OR p.seller_id = $1
-         ORDER BY p.created_at DESC, p.id DESC`,
+         ORDER BY p.created_at DESC, p.id DESC
+         LIMIT 50`,
         [req.session.userId]
       );
       const mine = id => String(id) === String(req.session.userId);

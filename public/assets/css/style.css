@@ -54,9 +54,23 @@ article h3, .panel h2 { margin-top: .5rem; }
 input[aria-invalid="true"] { border-color: #a01818; }
 .skip-link { position: absolute; left: 1rem; top: -100px; background: white; padding: .5rem; }
 .skip-link:focus { top: 0; }
+.wallet { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin: 0; }
+.wallet[hidden] { display: none; }
+.wallet div { border: 1px solid #ddd; border-radius: 3px; padding: 1rem; }
+.wallet dt { color: #626262; }
+.wallet dd { margin: .25rem 0 0; font-size: 1.35rem; font-weight: bold; }
+.details { display: grid; grid-template-columns: max-content 1fr; gap: .5rem 1.5rem; }
+.details dt { font-weight: bold; }
+.details dd { margin: 0; overflow-wrap: anywhere; }
+.history-entry + .history-entry { margin-top: .75rem; padding-top: .25rem; border-top: 1px solid #ddd; }
+.history-entry h3 { margin: .5rem 0 .25rem; }
+.history-entry p { margin: .2rem 0; }
+#name-message:empty { display: none; }
+#name-form button { margin-top: .75rem; }
 @media (max-width: 650px) {
   .purchase-layout { grid-template-columns: 1fr; }
   .items { grid-template-columns: 1fr; }
+  .wallet { grid-template-columns: 1fr; }
   main { padding-top: 1.5rem; }
   nav { gap: .5rem 1rem; }
 }

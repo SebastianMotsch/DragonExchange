@@ -7,6 +7,7 @@
   <title>Profile | DragonExchange</title>
   <link rel="stylesheet" href="../assets/css/style.css">
   <script src="../assets/js/script.js" defer></script>
+  <script src="../assets/js/profile.js" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -22,12 +23,26 @@
   </header>
   <main id="main">
     <h1>Profile</h1>
-    <p class="muted">Sample profile</p>
-    <h2>Sample student</h2>
-    <p>Drexel University</p>
-    <h2>Past purchases</h2><p>No purchases yet.</p>
-    <h2>Past auctions</h2><p>No completed auctions.</p>
-    <h2>Past bids</h2><p>No past bids.</p>
+    <p id="profile-status" class="status" role="status">Loading your profile…</p>
+    <p><a id="profile-login" href="../auth/login.html" hidden>Log in</a></p>
+    <section id="profile-details" aria-labelledby="details-heading" hidden>
+      <h2 id="details-heading">Account details</h2>
+      <dl class="details">
+        <dt>Display name</dt><dd id="profile-name"></dd>
+        <dt>Drexel email</dt><dd id="profile-email"></dd>
+        <dt>Email verification</dt><dd id="profile-verified"></dd>
+        <dt>Member since</dt><dd id="profile-joined"></dd>
+      </dl>
+      <h2>Change display name</h2>
+      <form id="name-form" novalidate>
+        <label for="name-input">Display name</label>
+        <input id="name-input" name="name" maxlength="60" autocomplete="nickname" required aria-describedby="name-message">
+        <p id="name-message" role="status"></p>
+        <button type="submit">Save name</button>
+      </form>
+      <p class="muted">Your Drexel email can't be changed here, because it's how your account is verified.</p>
+      <p>See your listings, bids, purchases, and sales on your <a href="dashboard.html">Dashboard</a>.</p>
+    </section>
   </main>
 
 </body>
