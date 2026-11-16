@@ -15,6 +15,7 @@ async function start() {
     await db.exec(
       fs.readFileSync(path.join(root, "sql/migrations", file), "utf8"),
     );
+  await db.exec(fs.readFileSync(path.join(root, "sql/purchases.sql"), "utf8"));
   const hash = await bcrypt.hash("DemoPass123!", 4);
   for (const name of ["seller", "buyer", "other"])
     await db.query(
