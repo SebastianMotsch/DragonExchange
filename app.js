@@ -109,6 +109,9 @@ function createApp({
   );
   if (beforeStatic) beforeStatic(app);
   app.use(express.static(publicDirectory));
+  // Mounted after static so /listings/*.html pages aren't caught by /listings/:id
+  app.use("/listings", require("./routes/listings"));
+  app.use("/purchases", require("./routes/purchases")({ db }));
   app.use((req, res) =>
     res.status(404).sendFile(path.join(publicDirectory, "404.html")),
   );

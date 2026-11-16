@@ -7,6 +7,8 @@
   <title>Dashboard | DragonExchange</title>
   <link rel="stylesheet" href="../assets/css/style.css">
   <script src="../assets/js/script.js" defer></script>
+  <script src="../assets/js/dashboard.js" defer></script>
+  <script src="../assets/js/purchase-history.js" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -22,10 +24,30 @@
   </header>
   <main id="main">
     <h1>Dashboard</h1>
+    <section aria-labelledby="current-listings-heading">
+      <div class="section-heading">
+        <h2 id="current-listings-heading">Current listings</h2>
+      </div>
+      <p id="listings-status" role="status">Loading your listings…</p>
+      <p><a id="listings-login" href="../auth/login.html" hidden>Log in</a></p>
+      <div id="current-listings" class="items" data-limit="5" aria-busy="true"></div>
+      <p><a id="listings-view-all" href="listings.html" hidden>View all current listings</a></p>
+      <noscript><p>Enable JavaScript to load your current listings.</p></noscript>
+    </section>
+    <h2>Other activity</h2>
     <div class="items">
       <section class="panel"><h2>My bids</h2><p>No active bids.</p></section>
       <section class="panel"><h2>My auctions</h2><p>No active auctions.</p></section>
-      <section class="panel"><h2>My purchases</h2><p>No purchases yet.</p></section>
+      <section class="panel" aria-labelledby="my-purchases-heading">
+        <h2 id="my-purchases-heading">My purchases</h2>
+        <p id="purchases-status" role="status">Loading purchases…</p>
+        <div id="my-purchases"></div>
+      </section>
+      <section class="panel" aria-labelledby="my-sales-heading">
+        <h2 id="my-sales-heading">My sales</h2>
+        <p id="sales-status" role="status">Loading sales…</p>
+        <div id="my-sales"></div>
+      </section>
     </div>
   </main>
 

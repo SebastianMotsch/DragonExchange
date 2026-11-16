@@ -21,6 +21,27 @@ button, .button { display: inline-block; padding: .55rem .9rem; border: 1px soli
 button:hover, .button:hover { background: #555; color: #fff; }
 :focus-visible { outline: 3px solid #307bbd; outline-offset: 3px; }
 .items { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+.section-heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin: 1.75rem 0 1rem; }
+.section-heading h2 { margin: 0; }
+.add-listing-card { display: flex; align-items: center; justify-content: center; min-height: 180px; padding: 1rem; border: 1px solid #ddd; border-radius: 3px; background: #fff; font-size: 3rem; text-decoration: none; }
+.add-listing-card:hover { background: #f3f3f3; border-color: #164675; }
+.items article { overflow-wrap: anywhere; }
+.listing-detail { overflow-wrap: anywhere; }
+.listing-image-placeholder { display: flex; align-items: center; justify-content: center; aspect-ratio: 4 / 3; max-height: 360px; margin-bottom: 1.5rem; border: 1px dashed #aaa; border-radius: 3px; background: #f3f3f3; color: #626262; }
+#seller-preview-controls, #seller-information { margin-bottom: 1rem; }
+#listing-description { white-space: pre-wrap; }
+#purchase-description { white-space: pre-wrap; }
+.purchase-layout { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 1.5rem; align-items: start; }
+.purchase-layout button:disabled { opacity: .6; cursor: not-allowed; }
+.buyer-actions { margin: 1.5rem 0; padding-top: 1rem; border-top: 1px solid #ddd; }
+.buyer-buttons { display: flex; flex-wrap: wrap; gap: .75rem; }
+.secondary-button { color: #333; background: #fff; }
+.buyer-buttons button:disabled { opacity: .6; cursor: not-allowed; }
+.buyer-buttons button:disabled:hover { background: #333; }
+.buyer-buttons .secondary-button:disabled:hover { color: #333; background: #fff; }
+.delete-listing { background: #fff; color: #a12622; border-color: #a12622; }
+.delete-listing:hover { background: #a12622; color: #fff; }
+.delete-listing:disabled { opacity: .6; cursor: wait; }
 article, .panel { border: 1px solid #ddd; border-radius: 3px; padding: 1rem; }
 article { overflow-wrap: anywhere; }
 button:disabled { opacity: .6; cursor: wait; }
@@ -34,6 +55,7 @@ input[aria-invalid="true"] { border-color: #a01818; }
 .skip-link { position: absolute; left: 1rem; top: -100px; background: white; padding: .5rem; }
 .skip-link:focus { top: 0; }
 @media (max-width: 650px) {
+  .purchase-layout { grid-template-columns: 1fr; }
   .items { grid-template-columns: 1fr; }
   main { padding-top: 1.5rem; }
   nav { gap: .5rem 1rem; }

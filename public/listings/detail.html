@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="View a regular listing on DragonExchange.">
+  <title>Listing details | DragonExchange</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <script src="../assets/js/listing-detail.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header>
+    <a class="brand" href="../index.html">DragonExchange</a>
+    <nav aria-label="Main navigation">
+      <a href="../index.html">Home</a>
+      <a href="../auctions/create.html">Sell</a>
+      <a href="../account/dashboard.html">Dashboard</a>
+      <a href="../account/profile.html">Profile</a>
+      <a href="../auth/login.html">Login</a>
+    </nav>
+  </header>
+  <main id="main">
+    <p><a href="../index.html">Home</a> <span id="seller-navigation" hidden>· <a href="../account/listings.html">My listings</a></span></p>
+    <h1 id="listing-title">Listing details</h1>
+    <p id="listing-status" role="status">Loading listing…</p>
+    <div id="seller-preview-controls" hidden>
+      <button id="preview-buyer" type="button" aria-pressed="false">Preview as buyer</button>
+      <p id="preview-status" role="status"></p>
+    </div>
+    <aside id="seller-information" class="panel" hidden>
+      <p>This is your listing. Manage your listings from <a href="../account/listings.html">My listings</a>.</p>
+    </aside>
+    <section id="listing-details" class="panel listing-detail" aria-label="Listing information" hidden>
+      <div class="listing-image-placeholder" role="img" aria-label="Listing photo placeholder: no photos yet">
+        <span>No photos yet</span>
+      </div>
+      <h2 id="listing-price"></h2>
+      <p><strong>Category:</strong> <span id="listing-category"></span></p>
+      <p><strong>Seller:</strong> <span id="listing-seller"></span></p>
+      <p><strong>Status:</strong> <span id="listing-state"></span></p>
+      <p><strong>Posted:</strong> <time id="listing-date"></time></p>
+      <div id="buyer-actions" class="buyer-actions" hidden>
+        <h2>Interested in this item?</h2>
+        <p>Arrange a pickup location and time with the seller.</p>
+        <div class="buyer-buttons">
+          <a id="buy-now" class="button" href="purchase.html">Buy now</a>
+          <button type="button" class="secondary-button" disabled aria-describedby="buyer-actions-help">Contact seller</button>
+        </div>
+        <p id="buyer-actions-help" class="muted">Review the item on the purchase page. Payment and messaging are not available yet.</p>
+      </div>
+      <h2>Description</h2>
+      <p id="listing-description"></p>
+    </section>
+    <noscript><p>Enable JavaScript to view this listing.</p></noscript>
+  </main>
+</body>
+</html>

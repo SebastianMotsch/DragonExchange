@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="View all your current regular listings on DragonExchange.">
+  <title>My listings | DragonExchange</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <script src="../assets/js/dashboard.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header>
+    <a class="brand" href="../index.html">DragonExchange</a>
+    <nav aria-label="Main navigation">
+      <a href="../index.html">Home</a>
+      <a href="../auctions/create.html">Sell</a>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="profile.html">Profile</a>
+      <a href="../auth/login.html">Login</a>
+    </nav>
+  </header>
+  <main id="main">
+    <p><a href="dashboard.html">Back to dashboard</a></p>
+    <h1>All current listings</h1>
+    <p id="listings-status" role="status">Loading your listings…</p>
+    <p><a id="listings-login" href="../auth/login.html" hidden>Log in</a></p>
+    <div id="current-listings" class="items" aria-busy="true"></div>
+    <noscript><p>Enable JavaScript to load your current listings.</p></noscript>
+  </main>
+</body>
+</html>
