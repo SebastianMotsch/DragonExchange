@@ -6,6 +6,7 @@
   <meta name="description" content="DragonExchange, a marketplace for Drexel students.">
   <title>Home | DragonExchange</title>
   <link rel="stylesheet" href="assets/css/style.css">
+  <script src="assets/js/auctions.js" defer></script>
   <script src="assets/js/home.js" defer></script>
 </head>
 <body>
@@ -23,7 +24,10 @@
   <main id="main">
     <h1>Home</h1>
     <p>Buy and sell with other Drexel students.</p>
-    <h2>Recent listings</h2>
+    <h2>Live auctions</h2>
+    <p id="auction-status" class="status" role="status" aria-live="polite">Loading auctions…</p>
+    <div id="auction-list" class="items"></div>
+    <h2>Buy now</h2>
     <p id="recent-listings-status" role="status">Loading recent listings…</p>
     <div id="recent-listings" class="items" aria-busy="true"></div>
     <noscript><p>Enable JavaScript to see recent listings.</p></noscript>

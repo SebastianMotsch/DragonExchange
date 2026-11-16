@@ -43,10 +43,15 @@ button:hover, .button:hover { background: #555; color: #fff; }
 .delete-listing:hover { background: #a12622; color: #fff; }
 .delete-listing:disabled { opacity: .6; cursor: wait; }
 article, .panel { border: 1px solid #ddd; border-radius: 3px; padding: 1rem; }
+article { overflow-wrap: anywhere; }
+button:disabled { opacity: .6; cursor: wait; }
 article h3, .panel h2 { margin-top: .5rem; }
 .muted { color: #626262; }
 .status { padding: .75rem; background: #f3f3f3; }
 .status:empty { display: none; }
+.field-error { color: #a01818; }
+.field-error:empty { display: none; }
+input[aria-invalid="true"] { border-color: #a01818; }
 .skip-link { position: absolute; left: 1rem; top: -100px; background: white; padding: .5rem; }
 .skip-link:focus { top: 0; }
 @media (max-width: 650px) {
