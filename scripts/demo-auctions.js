@@ -1,6 +1,13 @@
 // Local-only demo with real cookie login and Socket.IO, never Supabase credentials.
 const fs = require("node:fs");
 const path = require("node:path");
+const withFunding = process.argv.includes("--funding");
+const demoConfig = withFunding
+  ? require("dotenv").parse(fs.readFileSync(path.join(__dirname, "../.env")))
+  : {};
+// Even with sandbox funding, never connect this demo to the shared database.
+process.env.DATABASE_URL = "";
+process.env.APP_ORIGIN = "http://127.0.0.1:3001";
 const bcrypt = require("bcrypt");
 const session = require("express-session");
 const { PGlite } = require("@electric-sql/pglite");
@@ -9,6 +16,9 @@ const { createAuctionServer } = require("../lib/live-auctions");
 const poolFor = require("./pglite-pool");
 const { startDeadlineWorker } = require("../lib/auction-deadlines");
 async function start() {
+  if (withFunding && (!/^sk_test_/.test(demoConfig.STRIPE_SECRET_KEY || "") || !demoConfig.STRIPE_WEBHOOK_SECRET)) {
+    throw new Error("Set the Stripe test key and run npm run stripe:listen:demo first.");
+  }
   const db = new PGlite(),
     root = path.join(__dirname, "..");
   await db.exec(fs.readFileSync(path.join(root, "sql/schema.sql"), "utf8"));
@@ -40,8 +50,8 @@ async function start() {
     authRouter: require("./demo-auth")(pool),
     beforeStatic: require("./demo-pages"),
     fundingOptions: {
-      secretKey: "",
-      webhookSecret: "",
+      secretKey: demoConfig.STRIPE_SECRET_KEY || "",
+      webhookSecret: demoConfig.STRIPE_WEBHOOK_SECRET || "",
       origin: "http://127.0.0.1:3001",
     },
   });
@@ -62,6 +72,7 @@ async function start() {
     console.log(
       "Temporary database only; everything resets on exit. Use the seeded accounts; registration is not part of this demo.",
     );
+    if(withFunding) console.log("Stripe sandbox funding enabled; credits affect only this temporary database.");
   });
   async function stop() {
     await worker.stop();

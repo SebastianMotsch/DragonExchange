@@ -19,7 +19,7 @@ function start() {
     }
   }
   const envFile = path.join(__dirname, "../.env");
-  const port = Number(process.env.PORT || 3000);
+  const port = process.argv.includes("--demo") ? 3001 : Number(process.env.PORT || 3000);
   if (!Number.isInteger(port) || port < 1 || port > 65535) {
     console.error("PORT must be a valid port number.");
     process.exitCode = 1;
@@ -52,7 +52,7 @@ function start() {
           fs.writeFileSync(envFile, updated, { mode: 0o600 });
           ready = true;
           console.log("Stripe test listener ready. Signing secret saved to .env (not displayed).");
-          console.log("Keep this command running. Restart npm start to load the secret.");
+          console.log("Forwarding to port " + port + ". Keep this command running; restart the matching app/demo to load the secret.");
         } else if (/\[\d{3}\]/.test(line)) {
           console.log("Webhook forwarded: HTTP " + line.match(/\[(\d{3})\]/)[1]);
         } else if (/error|failed/i.test(line)) {

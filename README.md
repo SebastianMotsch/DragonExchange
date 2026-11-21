@@ -96,6 +96,22 @@ Use Stripe's documented test card `4242 4242 4242 4242`, a future expiry, and an
 
 Stripe account credentials are not in this repository. Automated tests use provider stubs and the Stripe SDK's real signature verifier; an actual Stripe sandbox checkout remains unverified until keys are supplied. Production login is also still awaiting Edric. Funding is disabled in the isolated demo.
 
+### Optional isolated Stripe checkout test
+
+To test real Stripe sandbox events before production login is available, run these in separate terminals:
+
+```bash
+npm run stripe:listen:demo
+```
+
+```bash
+npm run demo:funding
+```
+
+Wait for the listener to save its secret before starting the funding demo. Open http://127.0.0.1:3001, use a seeded demo account, then open /account/wallet.html. This opt-in mode reads only the Stripe secrets from .env and uses a temporary local database; it explicitly disables the shared database connection. Normal demo mode still disables Stripe funding.
+
+Complete the hosted checkout manually with Stripe's test card. A $10 deposit increases the buyer's initial $1,000 demo balance to $1,010 after the webhook arrives. Keep both commands running until verification finishes; restarting the demo discards pending deposits and balances. Stripe controls the available payment methods through its Dashboard; the deprecated `payment_method_types` creation parameter is not sent.
+
 References: [Stripe fulfillment](https://docs.stripe.com/checkout/fulfillment), [webhook signatures](https://docs.stripe.com/webhooks/signature), [sandbox testing](https://docs.stripe.com/testing).
 
 ## Manual demo without shared data

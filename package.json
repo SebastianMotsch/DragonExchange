@@ -12,7 +12,9 @@
     "db:migrate": "node scripts/migrate.js",
     "setup:purchases": "node scripts/setup-purchases.js",
     "worker:auctions": "node workers/auction-deadlines.js",
-    "stripe:listen": "node scripts/stripe-listen.js"
+    "stripe:listen": "node scripts/stripe-listen.js",
+    "stripe:listen:demo": "node scripts/stripe-listen.js --demo",
+    "demo:funding": "node scripts/demo-auctions.js --funding"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",

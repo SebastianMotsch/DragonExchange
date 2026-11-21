@@ -36,6 +36,7 @@ before(async () => {
   pool = poolFor(db);
   stripe = new Stripe("sk_test_fixture_only");
   stripe.checkout.sessions.create = async (data) => {
+    assert.equal(data.payment_method_types, undefined, "Checkout uses Dashboard-managed payment methods");
     creates++;
     const value = {
       id: "cs_test_" + data.metadata.depositId,
