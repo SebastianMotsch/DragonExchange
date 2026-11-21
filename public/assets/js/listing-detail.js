@@ -30,6 +30,7 @@ async function loadListingDetail() {
     const date = document.querySelector('#listing-date');
     date.dateTime = listing.created_at;
     date.textContent = new Date(listing.created_at).toLocaleDateString();
+    if (listing.photos && listing.photos.length) showPhotos(listing.photos, listing.title);
     details.hidden = false;
     status.textContent = '';
     const buyerActions = document.querySelector('#buyer-actions');
@@ -56,6 +57,36 @@ async function loadListingDetail() {
   } catch {
     status.textContent = 'Could not load this listing. Refresh the page to try again.';
   }
+}
+
+// Shows the cover photo large, with clickable thumbnails when there is more than one.
+function showPhotos(photos, title) {
+  const main = document.querySelector('#listing-photo');
+  const thumbnails = document.querySelector('#listing-thumbnails');
+  document.querySelector('#listing-photo-placeholder').hidden = true;
+  main.src = photos[0];
+  main.alt = `${title}, photo 1 of ${photos.length}`;
+  main.hidden = false;
+  if (photos.length < 2) return;
+
+  photos.forEach((url, index) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'thumbnail';
+    button.setAttribute('aria-label', `Show photo ${index + 1} of ${photos.length}`);
+    button.setAttribute('aria-pressed', String(index === 0));
+    const image = document.createElement('img');
+    image.src = url;
+    image.alt = '';
+    button.append(image);
+    button.addEventListener('click', () => {
+      main.src = url;
+      main.alt = `${title}, photo ${index + 1} of ${photos.length}`;
+      thumbnails.querySelectorAll('button').forEach(other => other.setAttribute('aria-pressed', String(other === button)));
+    });
+    thumbnails.append(button);
+  });
+  thumbnails.hidden = false;
 }
 
 loadListingDetail();

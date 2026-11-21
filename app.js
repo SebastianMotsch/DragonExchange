@@ -2,6 +2,7 @@ const express = require("express");
 const path = require("node:path");
 const session = require("express-session");
 const PgSession = require("connect-pg-simple")(session);
+const { UPLOAD_DIR } = require("./lib/photo-upload");
 function createApp({
   db,
   sessionStore,
@@ -110,6 +111,14 @@ function createApp({
   );
   if (beforeStatic) beforeStatic(app);
   app.use(express.static(publicDirectory));
+    // Static folder for listing photos saved by lib/photo-upload.js.
+  app.use(
+    "/uploads",
+    express.static(UPLOAD_DIR, {
+      index: false,
+      setHeaders: (res) => res.set("X-Content-Type-Options", "nosniff"),
+    }),
+  );
   // Mounted after static so /listings/*.html pages aren't caught by /listings/:id
   app.use("/listings", require("./routes/listings"));
   app.use("/purchases", require("./routes/purchases")({ db }));

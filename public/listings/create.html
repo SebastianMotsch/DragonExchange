@@ -28,7 +28,7 @@
     </nav>
     <h2>Create a regular listing</h2>
     <p>Set a fixed price for your item.</p>
-    <form id="listing-form" action="/listings" method="post">
+    <form id="listing-form" action="/listings" method="post" enctype="multipart/form-data">
       <label>Title
         <input type="text" name="title" maxlength="150" required>
       </label>
@@ -36,9 +36,10 @@
         <textarea name="description" rows="4" maxlength="5000" required></textarea>
       </label>
       <label>Photos
-        <input type="file" name="photos" accept="image/*" multiple disabled aria-describedby="photos-help">
+      <input type="file" name="photos" accept="image/jpeg,image/png,image/webp" multiple aria-describedby="photos-help">
       </label>
-      <p id="photos-help" class="muted">Photo uploads are not available yet.</p>
+      <p id="photos-help" class="muted">Optional. Up to 5 JPEG, PNG, or WebP photos, 5 MB each. The first photo is the cover.</p>
+      <div id="photo-previews" class="photo-previews" hidden></div>
       <label>Category
         <select name="category">
           <option>Books</option>

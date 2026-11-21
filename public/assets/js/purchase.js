@@ -32,6 +32,13 @@ async function loadPurchase() {
     document.querySelector('#purchase-price').textContent = price;
     document.querySelector('#purchase-total').textContent = price;
     document.querySelector('#purchase-back').href = `detail.html?id=${id}`;
+        if (listing.photos && listing.photos.length) {
+      const photo = document.querySelector('#purchase-photo');
+      photo.src = listing.photos[0];
+      photo.alt = listing.title;
+      photo.hidden = false;
+      document.querySelector('#purchase-photo-placeholder').hidden = true;
+    }
     document.querySelector('#purchase-preview').hidden = !data.isOwner;
     document.querySelector('#purchase-details').hidden = false;
     if (data.isOwner) {
