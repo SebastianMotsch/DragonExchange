@@ -27,6 +27,7 @@ async function start() {
     "002_live_bidding.sql",
     "003_auction_deadlines.sql",
     "004_wallet_funding.sql",
+    "005_auction_settlement.sql",
   ])
     await db.exec(
       fs.readFileSync(path.join(root, "sql/migrations", file), "utf8"),
@@ -58,6 +59,7 @@ async function start() {
   const { server, io } = createAuctionServer(app, pool);
   const worker = startDeadlineWorker({
     db: pool,
+    afterClose:()=>require("../lib/auction-settlement").settleDueAuctions(pool),
     onError: (error) => console.error("Demo worker:", error.code || error.name),
   });
   server.listen(3001, "127.0.0.1", () => {

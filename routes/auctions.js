@@ -45,6 +45,30 @@ module.exports = function auctionRouter(
       next(error);
     }
   });
+  router.get("/:id/settlement", async (req, res, next) => {
+    if (!validId(req.params.id))
+      return res.status(404).json({ error: "Auction not found." });
+    try {
+      const r = await db.query(
+        "SELECT a.status,j.status AS job_status,j.last_error,s.outcome,s.amount_cents,s.created_at FROM auctions a LEFT JOIN auction_settlement_jobs j ON j.auction_id=a.id LEFT JOIN auction_settlements s ON s.auction_id=a.id WHERE a.id=$1",
+        [req.params.id],
+      );
+      if (!r.rows.length)
+        return res.status(404).json({ error: "Auction not found." });
+      const row = r.rows[0];
+      res.json({
+        settlement: {
+          status: row.job_status || "not_ready",
+          outcome: row.outcome || null,
+          amount_cents: row.amount_cents ?? null,
+          created_at: row.created_at || null,
+          retrying: Boolean(row.last_error),
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
   router.get("/:id/manage", async (req, res, next) => {
     if (!req.session?.userId)
       return res.status(401).json({ error: "Log in to continue." });

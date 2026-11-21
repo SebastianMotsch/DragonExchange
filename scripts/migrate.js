@@ -12,6 +12,7 @@ const db = require("../db");
       "002_live_bidding.sql",
       "003_auction_deadlines.sql",
       "004_wallet_funding.sql",
+      "005_auction_settlement.sql",
     ]) {
       await client.query(
         fs.readFileSync(
