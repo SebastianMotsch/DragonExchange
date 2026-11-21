@@ -44,6 +44,41 @@ async function loadWallet() {
         target.append(row);
       }
     } else fundingMessage.textContent = "Deposit history is unavailable.";
+    const transfers = document.querySelector("#auction-transfers");
+    if (transfers) {
+      const response = await fetch("/api/auction-history", {
+        cache: "no-store",
+      });
+      if (!response.ok) {
+        transfers.textContent = "Auction history is unavailable.";
+        return;
+      }
+      const data = await response.json();
+      transfers.replaceChildren();
+      if (!data.purchases.length && !data.sales.length)
+        transfers.textContent = "No completed auction purchases or sales yet.";
+      for (const [kind, rows] of [
+        ["Purchased", data.purchases],
+        ["Sold", data.sales],
+      ]) {
+        for (const row of rows) {
+          const entry = document.createElement("p");
+          const link = document.createElement("a");
+          link.href =
+            "/auctions/detail.html?id=" + encodeURIComponent(row.auction_id);
+          link.textContent = row.title;
+          entry.append(
+            kind + " ",
+            link,
+            " — " +
+              walletMoney(row.amount_cents) +
+              " — " +
+              new Date(row.created_at).toLocaleString(),
+          );
+          transfers.append(entry);
+        }
+      }
+    }
   } catch (error) {
     message.textContent = error.message || "Unable to load your wallet.";
   }

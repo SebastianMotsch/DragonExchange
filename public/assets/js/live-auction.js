@@ -44,9 +44,32 @@ function startLiveAuction(id, initial) {
       }
     });
   refreshManagement();
+  let checkingSettlement = false;
+  async function refreshSettlement() {
+    if (
+      checkingSettlement ||
+      state.status === "active" ||
+      state.status === "cancelled"
+    )
+      return;
+    checkingSettlement = true;
+    try {
+      const response = await fetch("/api/auctions/" + id + "/settlement", {
+        cache: "no-store",
+      });
+      if (response.ok) {
+        const { settlement } = await response.json();
+        apply({ ...state, settlement });
+      }
+    } catch {
+    } finally {
+      checkingSettlement = false;
+    }
+  }
+  refreshSettlement();
   function apply(next) {
     if (Number(next.id) !== Number(id) || next.version < state.version) return;
-    state = next;
+    state = { ...next, settlement: next.settlement || state.settlement };
     const target = document.querySelector("#auction-detail");
     target.replaceChildren();
     renderAuction(target, state, true);
@@ -60,9 +83,13 @@ function startLiveAuction(id, initial) {
       status.textContent =
         state.status === "cancelled"
           ? "This auction was cancelled."
-          : state.status === "settled"
-            ? "Auction settled. Bidding is closed."
-            : "Auction ended. Bidding is closed; settlement is pending.";
+          : state.settlement?.outcome === "no_bids"
+            ? "Auction ended with no bids. No payment was made."
+            : state.status === "settled"
+              ? "Auction settled. Bidding is closed."
+              : state.settlement?.retrying
+              ? "Settlement is pending retry. No transfer was completed."
+                : "Auction ended. Bidding is closed; settlement is pending.";
       if (cancelButton) cancelButton.hidden = true;
     }
   }
@@ -93,6 +120,11 @@ function startLiveAuction(id, initial) {
   socket.on("AUCTION_ENDED", (next) => {
     apply(next);
     balance();
+    refreshSettlement();
+  });
+  socket.on("AUCTION_SETTLED", (next) => {
+    apply(next);
+    balance();
   });
   socket.on("AUCTION_CANCELLED", (next) => {
     apply(next);
@@ -101,6 +133,7 @@ function startLiveAuction(id, initial) {
   socket.on("AUCTION_STATE", (next) => {
     apply(next);
     balance();
+    refreshSettlement();
   });
   socket.on("connect", () => {
     ready = false;
@@ -119,6 +152,7 @@ function startLiveAuction(id, initial) {
         document.querySelector("#bid-login").hidden = true;
         apply(result.state);
         balance();
+        refreshSettlement();
         if (state.status === "active")
           status.textContent = "Live updates connected.";
       });

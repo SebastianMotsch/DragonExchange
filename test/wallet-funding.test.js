@@ -25,7 +25,9 @@ before(async () => {
   for (const f of [
     "001_auctions.sql",
     "002_live_bidding.sql",
+    "003_auction_deadlines.sql",
     "004_wallet_funding.sql",
+    "005_auction_settlement.sql",
   ])
     await db.exec(
       fs.readFileSync(path.join(__dirname, "../sql/migrations", f), "utf8"),

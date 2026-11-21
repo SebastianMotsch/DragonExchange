@@ -49,7 +49,7 @@ Each bid uses one database transaction/client: lock the auction, then affected w
 
 A leading bid reserves funds. Being outbid releases the prior hold, while raising your own leading bid holds only the extra amount. Different auctions cannot spend the same available funds. Wallets default to zero; there is no public balance-edit or free-funding endpoint. A separate test-funding page now credits signed Stripe sandbox payments; withdrawals and the full transfer ledger remain #14/#24.
 
-Bid throttling is in-process (one attempt per user per 500ms). Bid broadcasts use the existing single-backend setup. Deadline and cancellation events are saved in Postgres and relayed to connected viewers. An expired auction rejects bids even if the deadline worker is down. Leading funds remain reserved pending #11 settlement; ending an auction never automatically transfers or releases them.
+Bid throttling is in-process (one attempt per user per 500ms). Bid broadcasts use the existing single-backend setup. Deadline, cancellation, and settlement events are saved in Postgres and relayed to connected viewers. An expired auction rejects bids even if the worker is down. Ending queues a job; the worker's settlement phase consumes the winning hold and transfers the internal demo balance.
 
 ## Deadline worker (#25)
 
@@ -64,13 +64,23 @@ npm start
 npm run worker:auctions
 ```
 
-The worker checks immediately on startup, then every minute. It locks overdue active auctions with `FOR UPDATE SKIP LOCKED`, persists `ended`/an end timestamp, increments the version, and writes an event plus a unique pending settlement job in one transaction. Overlapping ticks are coalesced, multiple workers do not close the same auction twice, and restarts catch missed deadlines.
+The worker checks immediately on startup, then every minute. It locks overdue active auctions with `FOR UPDATE SKIP LOCKED`, persists `ended`/an end timestamp, increments the version, and writes an event plus a unique pending settlement job in one transaction. It then processes pending settlements, including backlog when no new auction ended. Overlapping ticks are coalesced, multiple workers do not close/charge the same auction twice, and restarts catch missed deadlines.
 
-The web server checks saved events for viewed rooms every two seconds and sends `AUCTION_ENDED` or `AUCTION_CANCELLED`. Reconnecting viewers also receive the current snapshot. Events use per-auction versions so out-of-order commits from different workers cannot be skipped. These are in-page notifications, not email or OS push messages.
+The web server checks saved events for viewed rooms every two seconds and sends `AUCTION_ENDED`, `AUCTION_CANCELLED`, or `AUCTION_SETTLED`. Reconnecting viewers also receive the current snapshot and can fetch the settlement result. Events use per-auction versions so out-of-order commits from different workers cannot be skipped. These are in-page notifications, not email or OS push messages.
 
-Supported flow: immediate start `active → ended` (awaiting settlement), then `settled` when #11 is implemented. No future-start scheduling or automatic deadline extension is offered. The verified owner may cancel an active auction with zero bids through the detail page; the row is retained. Cancellation after bids requires #10's policy and remains blocked. A database trigger prevents changing starting price/deadline after any bid.
+Supported flow: immediate start `active → ended → settled` for a sold auction. A no-bid auction stays `ended` with a completed `no_bids` result and no payment. No future-start scheduling or automatic deadline extension is offered. The verified owner may cancel an active auction with zero bids through the detail page; the row is retained. Cancellation after bids requires #10's policy and remains blocked. A database trigger prevents changing starting price/deadline after any bid.
 
-`auction_settlement_jobs` is the durable handoff to #11, not a completed settlement implementation. This story does not debit a winner or credit a seller.
+### Atomic settlement (#11)
+
+Apply migration `005_auction_settlement.sql` with `npm run db:migrate` and restart the app and worker. The same `npm run worker:auctions` command now handles both closing and settlement; both local demo commands do too.
+
+For each job, settlement locks the auction first, then its job, then buyer/seller wallets in user-ID order, matching bid lock order. It verifies that the highest accepted bid was on time and matches the final auction state, the winner is eligible, and the corresponding funds remain reserved. One transaction records the unique auction sale, debits the winner, consumes only that auction's hold, credits the seller, inserts paired debit/credit ledger entries, completes the job, and saves the final event. Other auction holds are preserved. This never calls Stripe or charges a card.
+
+Duplicate/restarted workers cannot transfer twice: row locking plus unique auction-settlement and ledger references protect the operation. Failed transactions roll back every money/history write and leave the job pending with a safe error code and retry delay (30 seconds increasing to a 5-minute cap). Missing/corrupt funds, an ineligible winner, inconsistent bid state, or an after-deadline bid require review; a lower bidder is not silently promoted because their funds were already released. The page shows pending retry instead of a completed sale.
+
+Completed auction sales live in `auction_settlements`, independently of Steven's fixed-price `purchases` table. Signed-in users can view their auction purchases/sales and updated balances on the Wallet page. `GET /api/auction-history` is owner-scoped; `GET /api/auctions/:id/settlement` returns the public outcome without exposing buyer/seller account IDs. Sebastian's dashboard/profile code is unchanged.
+
+To demo: create an auction ending shortly, place a bid from another browser account, and wait up to a minute after the deadline. Both detail pages should show settled; the winner's total and reserved balances decrease by the price, the seller's total increases by that price, and both get an auction history entry. Refresh or restart the worker to verify there is no second charge. Repeat without bids: no money or financial ledger entries should change.
 
 ## Stripe test funding
 
@@ -157,4 +167,4 @@ Tests run without Supabase using isolated PGlite databases, real migrations, HTT
 
 The auction/database work was additionally checked against shared Supabase using temporary verified test accounts, an auth adapter, real HTTP sessions, socket broadcasts, and competing Postgres transactions. The test fixtures were removed afterward. Browser checks used demo auth and covered creation, two competing bidders, refresh, logout, and mobile layout.
 
-Remaining integration work: Edric's actual login/verification/logout, a real Stripe sandbox checkout, withdrawals and the full wallet ledger, bid retraction (#10), money settlement (#11), and shared listing/photo integration. This branch is based on main as of Nov 21, including the merged listing/dashboard work. Teammate auth, profile, dashboard, and regular-listing implementation files are unchanged.
+Remaining integration work: Edric's actual login/verification/logout, withdrawals, fixed-price wallet transfers and the remaining full ledger coverage, bid retraction (#10), and shared listing/photo integration. Stripe sandbox funding has been verified in the isolated demo; auction settlement now has isolated browser and live Postgres checks. Teammate auth, profile, dashboard, and regular-listing implementation files are unchanged.
