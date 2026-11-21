@@ -33,7 +33,7 @@ test("normal app does not expose the demo auth files", async () => {
 before(async () => {
   db = new PGlite();
   await db.exec(fs.readFileSync(path.join(root, "sql/schema.sql"), "utf8"));
-  for (const file of ["001_auctions.sql", "002_live_bidding.sql"])
+  for (const file of ["001_auctions.sql", "002_live_bidding.sql", "003_auction_deadlines.sql"])
     await db.exec(
       fs.readFileSync(path.join(root, "sql/migrations", file), "utf8"),
     );
@@ -314,6 +314,23 @@ test("reconnect returns current state and logout disconnects the session", async
   await closed;
   assert.equal((await request("/auth/me", undefined, cookie)).status, 401);
   await assert.rejects(connect(cookie));
+});
+test("deadline worker event reaches an authenticated viewer",async()=>{
+  const auction=await create();
+  const socket=await connect(cookies.seller);
+  await ack(socket,"JOIN_AUCTION_ROOM",{auctionId:auction.id});
+  const notification=new Promise((resolve,reject)=>{
+    const timer=setTimeout(()=>reject(new Error("No end notification received")),5000);
+    socket.once("AUCTION_ENDED",state=>{clearTimeout(timer);resolve(state);});
+  });
+  await pool.query("UPDATE auctions SET created_at=clock_timestamp()-interval '2 days',ends_at=clock_timestamp()-interval '1 second' WHERE id=$1",[auction.id]);
+  await require("../lib/auction-deadlines").endDueAuctions(pool);
+  const {startAuctionEventRelay}=require("../lib/auction-events");
+  const relay=startAuctionEventRelay(pool,io,{intervalMs:60000});
+  await relay.poll();await relay.stop();
+  const state=await notification;
+  assert.equal(state.id,auction.id);assert.equal(state.status,"ended");
+  socket.disconnect();
 });
 test("changing rooms while a bid is saving never broadcasts into the new room", async (t) => {
   const a = await create(),

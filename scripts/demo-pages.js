@@ -3,14 +3,42 @@ const express = require("express");
 const fs = require("node:fs");
 const path = require("node:path");
 module.exports = function demoPages(app) {
+  // The regular-listing router currently imports the shared database directly.
+  // Keep those API calls outside this isolated auction demo.
+  app.use("/listings", (req, res, next) => {
+    if (req.path.endsWith(".html")) return next();
+    res
+      .status(503)
+      .json({
+        error:
+          "Regular listings are not connected in the isolated auction demo.",
+      });
+  });
   const fixtures = path.join(__dirname, "demo-public");
   app.use("/__demo", express.static(fixtures));
-  app.get("/auth/login.html", (req, res) => res.sendFile(path.join(fixtures, "login.html")));
-  for (const route of ["/", "/index.html", "/auctions/create.html", "/auctions/detail.html"]) {
+  app.get("/auth/login.html", (req, res) =>
+    res.sendFile(path.join(fixtures, "login.html")),
+  );
+  for (const route of [
+    "/",
+    "/index.html",
+    "/auctions/create.html",
+    "/auctions/detail.html",
+  ]) {
     app.get(route, (req, res) => {
       const file = route === "/" ? "index.html" : route.slice(1);
-      const html = fs.readFileSync(path.join(__dirname, "../public", file), "utf8");
-      res.type("html").send(html.replace("</head>", '<script src="/__demo/account.js" defer></script></head>'));
+      const html = fs.readFileSync(
+        path.join(__dirname, "../public", file),
+        "utf8",
+      );
+      res
+        .type("html")
+        .send(
+          html.replace(
+            "</head>",
+            '<script src="/__demo/account.js" defer></script></head>',
+          ),
+        );
     });
   }
 };

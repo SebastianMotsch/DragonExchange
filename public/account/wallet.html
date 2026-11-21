@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+ <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+ <title>Wallet | DragonExchange</title>
+ <link rel="stylesheet" href="../assets/css/style.css">
+ <script src="../assets/js/wallet.js" defer></script>
+</head>
+<body>
+ <header><a class="brand" href="../index.html">DragonExchange</a><nav aria-label="Main navigation"><a href="../index.html">Home</a><a href="dashboard.html">Dashboard</a><a href="../auth/login.html">Login</a></nav></header>
+ <main>
+  <h1>Wallet</h1>
+  <p>This project uses demo funds. Stripe checkout is test mode only; no real money is deposited.</p>
+  <p id="wallet-message" role="status" aria-live="polite">Loading your balance…</p>
+  <dl><dt>Total balance</dt><dd id="balance-total">—</dd><dt>Reserved for bids</dt><dd id="balance-reserved">—</dd><dt>Available</dt><dd id="balance-available">—</dd></dl>
+  <button id="refresh-wallet" type="button">Refresh balance</button>
+  <form id="funding-form">
+   <h2>Add test funds</h2>
+   <label>Amount ($1–$500)<input name="amount" type="number" min="1" max="500" step="0.01" required></label>
+   <button type="submit" disabled>Continue to Stripe test checkout</button>
+   <p id="funding-message" role="status" aria-live="polite"></p>
+  </form>
+  <h2>Recent deposits</h2><div id="deposits"></div>
+  <p>Withdrawals and auction settlement are not available yet.</p>
+ </main>
+</body>
+</html>

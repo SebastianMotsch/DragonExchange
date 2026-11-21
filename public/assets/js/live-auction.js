@@ -9,6 +9,41 @@ function startLiveAuction(id, initial) {
   let state = initial,
     ready = false,
     pending = null;
+  const cancelButton = document.querySelector("#cancel-auction");
+  async function refreshManagement() {
+    if (!cancelButton) return;
+    try {
+      const r = await fetch("/api/auctions/" + id + "/manage");
+      cancelButton.hidden = !r.ok || !(await r.json()).canCancel;
+    } catch {
+      cancelButton.hidden = true;
+    }
+  }
+  if (cancelButton)
+    cancelButton.addEventListener("click", async () => {
+      if (
+        !confirm(
+          "Cancel this auction? It will be removed from the marketplace.",
+        )
+      )
+        return;
+      cancelButton.disabled = true;
+      try {
+        const r = await fetch("/api/auctions/" + id + "/cancel", {
+          method: "POST",
+          headers: { "X-Requested-With": "DragonExchange" },
+        });
+        const result = await r.json();
+        if (!r.ok) throw new Error(result.error);
+        feedback.textContent = "Auction cancelled.";
+        cancelButton.hidden = true;
+      } catch (error) {
+        feedback.textContent = error.message;
+      } finally {
+        cancelButton.disabled = false;
+      }
+    });
+  refreshManagement();
   function apply(next) {
     if (Number(next.id) !== Number(id) || next.version < state.version) return;
     state = next;
@@ -21,6 +56,15 @@ function startLiveAuction(id, initial) {
         : state.current_bid_cents + state.min_increment_cents) / 100
     ).toFixed(2);
     button.disabled = !ready || state.status !== "active";
+    if (state.status !== "active") {
+      status.textContent =
+        state.status === "cancelled"
+          ? "This auction was cancelled."
+          : state.status === "settled"
+            ? "Auction settled. Bidding is closed."
+            : "Auction ended. Bidding is closed; settlement is pending.";
+      if (cancelButton) cancelButton.hidden = true;
+    }
   }
   async function balance() {
     try {
@@ -42,6 +86,15 @@ function startLiveAuction(id, initial) {
     autoConnect: false,
   });
   socket.on("BID_ACCEPTED", (next) => {
+    apply(next);
+    balance();
+    refreshManagement();
+  });
+  socket.on("AUCTION_ENDED", (next) => {
+    apply(next);
+    balance();
+  });
+  socket.on("AUCTION_CANCELLED", (next) => {
     apply(next);
     balance();
   });
@@ -66,7 +119,8 @@ function startLiveAuction(id, initial) {
         document.querySelector("#bid-login").hidden = true;
         apply(result.state);
         balance();
-        status.textContent = "Live updates connected.";
+        if (state.status === "active")
+          status.textContent = "Live updates connected.";
       });
   });
   socket.on("disconnect", () => {

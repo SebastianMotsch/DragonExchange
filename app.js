@@ -9,9 +9,12 @@ function createApp({
   configured = () => Boolean(process.env.DATABASE_URL),
   authRouter,
   beforeStatic,
+  fundingOptions,
 }) {
   const app = express();
   if (process.env.NODE_ENV === "production") app.set("trust proxy", 1);
+  const funding=require("./routes/funding").createFunding({db,...fundingOptions});
+  app.post("/api/wallet/webhook",express.raw({type:"application/json",limit:"256kb"}),funding.webhook);
   app.use(express.json({ limit: "32kb" }));
   app.use((error, req, res, next) => {
     if (error.type === "entity.parse.failed")
@@ -51,6 +54,7 @@ function createApp({
   app.use("/auth", authRouter || require("./routes/auth"));
   app.use("/api/auctions", require("./routes/auctions")(db, configured));
   app.use("/api/account", require("./routes/account")(db));
+  app.use("/api/wallet",funding.router);
   app.get("/api/wallet", async (req, res) => {
     res.set("Cache-Control", "no-store");
     if (!req.session?.userId)

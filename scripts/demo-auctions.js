@@ -7,11 +7,17 @@ const { PGlite } = require("@electric-sql/pglite");
 const { createApp } = require("../app");
 const { createAuctionServer } = require("../lib/live-auctions");
 const poolFor = require("./pglite-pool");
+const { startDeadlineWorker } = require("../lib/auction-deadlines");
 async function start() {
   const db = new PGlite(),
     root = path.join(__dirname, "..");
   await db.exec(fs.readFileSync(path.join(root, "sql/schema.sql"), "utf8"));
-  for (const file of ["001_auctions.sql", "002_live_bidding.sql"])
+  for (const file of [
+    "001_auctions.sql",
+    "002_live_bidding.sql",
+    "003_auction_deadlines.sql",
+    "004_wallet_funding.sql",
+  ])
     await db.exec(
       fs.readFileSync(path.join(root, "sql/migrations", file), "utf8"),
     );
@@ -33,8 +39,17 @@ async function start() {
     configured: () => true,
     authRouter: require("./demo-auth")(pool),
     beforeStatic: require("./demo-pages"),
+    fundingOptions: {
+      secretKey: "",
+      webhookSecret: "",
+      origin: "http://127.0.0.1:3001",
+    },
   });
   const { server, io } = createAuctionServer(app, pool);
+  const worker = startDeadlineWorker({
+    db: pool,
+    onError: (error) => console.error("Demo worker:", error.code || error.name),
+  });
   server.listen(3001, "127.0.0.1", () => {
     console.log("Local auction demo: http://127.0.0.1:3001");
     console.log(
@@ -49,6 +64,7 @@ async function start() {
     );
   });
   async function stop() {
+    await worker.stop();
     io.close(async () => {
       await db.close();
       process.exit(0);
