@@ -10,7 +10,8 @@
     "test": "node --test",
     "demo:auctions": "node scripts/demo-auctions.js",
     "db:migrate": "node scripts/migrate.js",
-    "setup:purchases": "node scripts/setup-purchases.js"
+    "setup:purchases": "node scripts/setup-purchases.js",
+    "test:db": "node test/email-verification.integration.test.js --database"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",

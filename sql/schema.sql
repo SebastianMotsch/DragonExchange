@@ -29,3 +29,14 @@ ALTER TABLE listings ALTER COLUMN seller_id DROP NOT NULL;
 
 -- Listings are accessed through the Express backend.
 ALTER TABLE listings ENABLE ROW LEVEL SECURITY;
+
+
+CREATE TABLE IF NOT EXISTS email_verifications (
+  user_id       INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  token_hash    TEXT UNIQUE NOT NULL,
+  expires_at    TIMESTAMPTZ NOT NULL,
+  last_sent_at  TIMESTAMPTZ
+);
+
+ALTER TABLE email_verifications ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON email_verifications FROM PUBLIC, anon, authenticated;

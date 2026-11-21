@@ -2,6 +2,7 @@ const express = require("express");
 const bcrypt = require("bcrypt");
 const db = require("../db");
 const registrationLimiter = require("../middleware/registration-limiter");
+const { verifyEmailToken } = require("../services/verification");
 const router = express.Router();
 const saltRounds = 12;
 const maxPasswordBytes = 72;
@@ -126,7 +127,51 @@ router.post("/register", registrationLimiter, async function (req, res) {
   }
 });
 
-// TODO: POST /verify    - check code, set verified = true
+router.post("/verify", async function (req, res) {
+  const invalidTokenMessage = "The verification token is invalid or expired. Request a new verification email.";
+
+  if (!req.body || typeof req.body.token !== "string") {
+    return res.status(400).json({
+      error: invalidTokenMessage
+    });
+  }
+
+  const token = req.body.token;
+
+  if (token.length !== 64) {
+    return res.status(400).json({
+      error: invalidTokenMessage
+    });
+  }
+
+  const tokenCharacters = "0123456789abcdef";
+  for (let i = 0; i < token.length; i++) {
+    if (!tokenCharacters.includes(token[i])) {
+      return res.status(400).json({
+        error: invalidTokenMessage
+      });
+    }
+  }
+
+  try {
+    const verified = await verifyEmailToken(token);
+
+    if (!verified) {
+      return res.status(400).json({
+        error: invalidTokenMessage
+      });
+    }
+
+    return res.status(200).json({
+      message: "Your Drexel email has been verified."
+    });
+  } catch {
+    return res.status(500).json({
+      error: "Email verification is temporarily unavailable. Please try again."
+    });
+  }
+});
+
 // TODO: POST /login     - bcrypt.compare, block unverified, set req.session.userId
 // TODO: POST /logout    - req.session.destroy()
 
