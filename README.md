@@ -82,14 +82,13 @@ STRIPE_WEBHOOK_SECRET=whsec_...
 APP_ORIGIN=http://localhost:3000
 ```
 
-Use a Stripe sandbox/test account and the Stripe CLI to forward events:
+Install the Stripe CLI, then use this project's helper to forward sandbox events:
 
 ```bash
-stripe login
-stripe listen --forward-to localhost:3000/api/wallet/webhook
+npm run stripe:listen
 ```
 
-Copy the signing secret printed by `stripe listen` into the Git-ignored `.env`, then restart the app. Use the sandbox key from Stripe's API keys page. Live keys are refused. This flow uses hosted Checkout; no card data passes through our application. Sandbox test payments do not move real money.
+The helper reads this project's test API key, starts the listener, and saves its signing secret to the Git-ignored `.env` without printing either secret. No separate CLI login is required. Keep the listener running and restart `npm start` after it reports ready. On Windows it also finds a WinGet-installed CLI if the current terminal has an old PATH. Use the sandbox key from Stripe's API keys page. Live keys are refused. This flow uses hosted Checkout; no card data passes through our application. Sandbox test payments do not move real money.
 
 The verified owner chooses $1–$500. `POST /api/wallet/checkout` creates a pending deposit and an idempotent Stripe Checkout Session. The return URL never credits funds. The raw-body webhook verifies Stripe's signature, retrieves the session, checks test mode/payment/amount/currency/account, then atomically credits the wallet and a unique deposit ledger entry. Duplicate events cannot credit twice. Checkout requests are rate-limited and a lost response can be retried with the same UUID.
 
