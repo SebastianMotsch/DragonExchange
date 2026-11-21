@@ -7,7 +7,7 @@ const db = require("../db");
   try {
     if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL is required.");
     client = await db.connect();
-    for (const filename of ["001_auctions.sql", "002_live_bidding.sql"]) {
+    for (const filename of ["001_auctions.sql", "002_live_bidding.sql", "003_listing_photos.sql"]) {
       await client.query(
         fs.readFileSync(
           path.join(__dirname, "../sql/migrations", filename),

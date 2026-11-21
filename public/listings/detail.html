@@ -32,8 +32,12 @@
       <p>This is your listing. Manage your listings from <a href="../account/listings.html">My listings</a>.</p>
     </aside>
     <section id="listing-details" class="panel listing-detail" aria-label="Listing information" hidden>
-      <div class="listing-image-placeholder" role="img" aria-label="Listing photo placeholder: no photos yet">
-        <span>No photos yet</span>
+            <div class="listing-gallery">
+        <div id="listing-photo-placeholder" class="listing-image-placeholder" role="img" aria-label="Listing photo placeholder: no photos yet">
+          <span>No photos yet</span>
+        </div>
+        <img id="listing-photo" class="listing-photo" alt="" hidden>
+        <div id="listing-thumbnails" class="listing-thumbnails" aria-label="Choose a photo" hidden></div>
       </div>
       <div class="listing-info">
         <h2 id="listing-price"></h2>

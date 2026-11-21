@@ -10,9 +10,21 @@ async function loadRecentListings() {
     for (const listing of listings) {
       const card = document.createElement('article');
       card.className = 'listing-card';
-      const image = document.createElement('div');
-      image.className = 'listing-image-placeholder';
-      image.textContent = 'No photos yet';
+      
+            let image;
+      if (listing.photo_url) {
+        // The cover photo; the title right below already describes it.
+        image = document.createElement('img');
+        image.className = 'listing-photo';
+        image.src = listing.photo_url;
+        image.alt = '';
+        image.loading = 'lazy';
+      } else {
+        image = document.createElement('div');
+        image.className = 'listing-image-placeholder';
+        image.textContent = 'No photos yet';
+      }
+
       const title = document.createElement('h3');
       const link = document.createElement('a');
       link.href = `listings/detail.html?id=${listing.id}`;

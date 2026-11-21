@@ -89,7 +89,7 @@ article p { margin: .2rem 0; }
 
 /* Buy-now cards on Home: photo first, then title, category, price, date */
 .listing-card { position: relative; padding: 0; overflow: hidden; }
-.listing-card > :not(.listing-image-placeholder) { margin-inline: .9rem; }
+.listing-card > :not(.listing-image-placeholder, .listing-photo) { margin-inline: .9rem; }
 .listing-card h3 { margin: .75rem .9rem .15rem; font-family: var(--body); font-size: 1rem; }
 .listing-card > :last-child { margin-bottom: .9rem; }
 .listing-card .listing-image-placeholder { margin: 0; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; }
@@ -194,9 +194,26 @@ button:disabled { opacity: .55; cursor: wait; }
   .items, .items:has(> .panel) { grid-template-columns: 1fr; gap: .75rem; }
   /* Photo cards stay two across, like a phone marketplace feed */
   #recent-listings, #current-listings { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .listing-card h3, .listing-card > :not(.listing-image-placeholder) { margin-inline: .7rem; }
+  .listing-card h3, .listing-card > :not(.listing-image-placeholder, .listing-photo) { margin-inline: .7rem; }
   .listing-card h3 { font-size: .95rem; }
   .price { font-size: 1.1rem; }
   #listing-details, .purchase-layout, .wallet { grid-template-columns: 1fr; }
   form { padding: 1.1rem; }
 }
+
+
+/* ---------- Listing photos ---------- */
+.listing-photo { display: block; width: 100%; aspect-ratio: 1 / 1; object-fit: cover; background: #e4e9f0; }
+.listing-card .listing-photo { border-bottom: 1px solid var(--line); }
+/* Listing and purchase pages show the whole photo instead of cropping it */
+#listing-details .listing-photo, .purchase-layout .listing-photo { aspect-ratio: 4 / 3; object-fit: contain; border-radius: 8px; }
+.purchase-layout .listing-photo { margin-bottom: 1.25rem; }
+.listing-thumbnails { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .75rem; }
+.thumbnail { width: 64px; height: 64px; padding: 0; overflow: hidden; border: 2px solid transparent; border-radius: 6px; background: none; }
+.thumbnail img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.thumbnail:hover { border-color: var(--line-strong); background: none; }
+.thumbnail[aria-pressed="true"] { border-color: var(--blue); }
+/* Previews on the Sell form; the gold edge marks the cover photo */
+.photo-previews { display: flex; flex-wrap: wrap; gap: .5rem; margin: -.4rem 0 1rem; }
+.photo-previews img { width: 72px; height: 72px; object-fit: cover; border: 2px solid var(--line); border-radius: 6px; }
+.photo-previews img:first-child { border-color: var(--gold); }
