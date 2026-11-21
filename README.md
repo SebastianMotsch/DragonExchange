@@ -94,7 +94,7 @@ The verified owner chooses $1–$500. `POST /api/wallet/checkout` creates a pend
 
 Use Stripe's documented test card `4242 4242 4242 4242`, a future expiry, and any three-digit CVC in hosted test Checkout. Confirm credited status on the wallet page and in Stripe's sandbox. Failures/unpaid or cancelled sessions remain pending and give no balance credit. Expired Checkout sessions require a new request.
 
-Stripe account credentials are not in this repository. Automated tests use provider stubs and the Stripe SDK's real signature verifier; an actual Stripe sandbox checkout remains unverified until keys are supplied. Production login is also still awaiting Edric. Funding is disabled in the isolated demo.
+Stripe account credentials are not in this repository. Automated tests use provider stubs and the Stripe SDK's real signature verifier. A real Stripe sandbox checkout and signed webhook delivery were verified in the opt-in isolated demo: a $10 payment credited the buyer once, and replaying its completion event did not credit twice. Production login is still awaiting Edric. Funding is disabled in the default isolated demo.
 
 ### Optional isolated Stripe checkout test
 
