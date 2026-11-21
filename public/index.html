@@ -15,15 +15,18 @@
     <a class="brand" href="index.html">DragonExchange</a>
     <nav aria-label="Main navigation">
       <a href="index.html" aria-current="page">Home</a>
-      <a href="auctions/create.html">Sell</a>
       <a href="account/dashboard.html">Dashboard</a>
       <a href="account/profile.html">Profile</a>
       <a href="auth/login.html">Login</a>
     </nav>
+    <a class="sell-link" href="auctions/create.html">Sell</a>
   </header>
   <main id="main">
-    <h1>Home</h1>
-    <p>Buy and sell with other Drexel students.</p>
+    <div class="intro">
+      <h1>Buy and sell at Drexel</h1>
+      <p>Textbooks, furniture, electronics, and more from other Drexel students. Bid on live auctions or buy at a set price.</p>
+      <p class="drexel-only">Only @drexel.edu accounts can join</p>
+    </div>
     <h2>Live auctions</h2>
     <p id="auction-status" class="status" role="status" aria-live="polite">Loading auctions…</p>
     <div id="auction-list" class="items"></div>
