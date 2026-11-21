@@ -1,76 +1,202 @@
+/* DragonExchange: marketplace layout in Drexel blue and gold.
+   Jost is a free geometric typeface close to Futura, Drexel's brand face. */
+@import url("https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&display=swap");
+
+:root {
+  --blue: #07294d;        /* Drexel Blue */
+  --blue-hover: #0d3a69;
+  --gold: #ffc600;        /* Drexel Gold */
+  --gold-tint: #fff6d6;
+  --canvas: #f0f2f5;      /* page background */
+  --surface: #ffffff;     /* cards, panels, forms */
+  --ink: #1c1e21;
+  --muted: #5f6368;
+  --line: #dadde1;
+  --line-strong: #b8c0cc;
+  --link: #006298;
+  --info: #e7eef7;
+  --danger: #b42318;
+  --display: "Jost", "Futura", "Century Gothic", "Trebuchet MS", sans-serif;
+  --body: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --page: 1120px;
+}
+
+/* ---------- Base ---------- */
 * { box-sizing: border-box; }
-body { margin: 0; color: #242424; background: #fff; font-family: Arial, sans-serif; font-size: 16px; line-height: 1.5; }
-a { color: #164675; text-underline-offset: 3px; }
-a:hover { color: #000; }
-header, main { width: min(100% - 2rem, 1050px); margin: auto; }
-header { padding: 1.5rem 0; border-bottom: 1px solid #ddd; }
-.brand { color: #242424; font-size: 1.35rem; font-weight: bold; text-decoration: none; }
-nav { display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; margin-top: 1rem; }
-nav a[aria-current="page"] { font-weight: bold; }
-main { min-height: 65vh; padding: 2rem 0 3rem; }
-h1 { margin: 0 0 1rem; font-size: 1.85rem; }
-h2 { margin-top: 1.75rem; font-size: 1.25rem; }
-h3 { font-size: 1.05rem; }
-p { margin: .75rem 0; }
-form { max-width: 520px; }
-label { display: block; margin-bottom: 1rem; font-weight: bold; }
-input, select, textarea, button, .button { font: inherit; }
-input, select, textarea { display: block; width: 100%; padding: .6rem; margin-top: .35rem; border: 1px solid #aaa; border-radius: 3px; background: #fff; color: #242424; }
-textarea { resize: vertical; }
-button, .button { display: inline-block; padding: .55rem .9rem; border: 1px solid #333; border-radius: 3px; background: #333; color: #fff; text-decoration: none; cursor: pointer; }
-button:hover, .button:hover { background: #555; color: #fff; }
-:focus-visible { outline: 3px solid #307bbd; outline-offset: 3px; }
-.items { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
-.section-heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin: 1.75rem 0 1rem; }
+[hidden] { display: none !important; }
+body { margin: 0; color: var(--ink); background: var(--canvas); font-family: var(--body); font-size: 16px; line-height: 1.5; }
+a { color: var(--link); text-underline-offset: 3px; }
+a:hover { color: var(--blue); }
+:focus-visible { outline: 3px solid var(--link); outline-offset: 2px; }
+h1, h2, h3 { font-family: var(--display); line-height: 1.2; }
+h1 { margin: 0 0 .75rem; font-size: 2rem; font-weight: 600; color: var(--blue); letter-spacing: -.01em; }
+h2 { margin: 2rem 0 .85rem; font-size: 1.35rem; font-weight: 600; }
+h3 { margin: 1.25rem 0 .5rem; font-size: 1.05rem; font-weight: 600; }
+p { margin: .6rem 0; }
+.muted { color: var(--muted); }
+.skip-link { position: absolute; left: 1rem; top: -100px; z-index: 20; padding: .5rem .75rem; border-radius: 6px; background: var(--gold); color: var(--blue); font-weight: 600; }
+.skip-link:focus { top: .5rem; }
+
+/* ---------- Top bar ---------- */
+header {
+  position: sticky; top: 0; z-index: 10;
+  display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1.5rem;
+  padding: .65rem max(1rem, calc((100% - var(--page)) / 2));
+  background: var(--blue);
+  border-bottom: 4px solid var(--gold);
+}
+header :focus-visible { outline-color: var(--gold); }
+.brand { display: inline-flex; align-items: center; gap: .6rem; margin-right: auto; color: #fff; font-family: var(--display); font-size: 1.4rem; font-weight: 600; letter-spacing: -.01em; text-decoration: none; }
+.brand::before { content: "DX"; content: "DX" / ""; display: grid; place-items: center; width: 2.1rem; height: 2.1rem; border-radius: 6px; background: var(--gold); color: var(--blue); font-size: .95rem; font-weight: 700; }
+.brand:hover { color: #fff; }
+header nav { display: flex; flex-wrap: wrap; align-items: center; gap: .15rem; }
+header nav a { padding: .45rem .75rem; border-radius: 6px; color: rgba(255, 255, 255, .86); font-weight: 500; text-decoration: none; }
+header nav a:hover { background: rgba(255, 255, 255, .1); color: #fff; }
+header nav a[aria-current="page"] { color: #fff; text-decoration: underline 3px var(--gold); text-underline-offset: 8px; }
+.sell-link { display: inline-flex; align-items: center; gap: .35rem; padding: .5rem 1.15rem; border-radius: 999px; background: var(--gold); color: var(--blue); font-family: var(--display); font-weight: 600; text-decoration: none; }
+.sell-link::before { content: "+"; content: "+" / ""; font-size: 1.2rem; line-height: 1; }
+.sell-link:hover { background: #ffd535; color: var(--blue); }
+.sell-link[aria-current="page"] { box-shadow: 0 0 0 2px #fff; }
+/* Signed-in bar added by the local demo */
+header > p { margin: 0; color: rgba(255, 255, 255, .86); font-size: .9rem; }
+header > p button { margin-left: .4rem; padding: .3rem .7rem; border-color: rgba(255, 255, 255, .5); background: transparent; font-size: .9rem; }
+header > p button:hover { background: rgba(255, 255, 255, .1); }
+
+/* ---------- Page ---------- */
+main { width: min(100% - 2rem, var(--page)); min-height: 65vh; margin: auto; padding: 1.75rem 0 4rem; }
+.intro { margin-bottom: 1rem; }
+.intro p { max-width: 60ch; margin: 0 0 .9rem; color: var(--muted); font-size: 1.05rem; }
+.drexel-only { display: inline-flex; align-items: center; gap: .5rem; padding: .3rem .8rem; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--blue); font-size: .9rem; font-weight: 500; }
+.drexel-only::before { content: ""; width: .6rem; height: .6rem; border-radius: 50%; background: var(--gold); box-shadow: 0 0 0 2px var(--blue); }
+
+/* Listing type switch on the Sell pages */
+main nav { display: inline-flex; gap: .25rem; margin: .25rem 0 .5rem; padding: .25rem; border-radius: 999px; background: #e4e6eb; }
+main nav a { padding: .4rem 1rem; border-radius: 999px; color: var(--ink); font-weight: 500; text-decoration: none; }
+main nav a:hover { background: rgba(255, 255, 255, .6); color: var(--ink); }
+main nav a[aria-current="page"] { background: var(--surface); color: var(--blue); font-weight: 600; box-shadow: 0 1px 2px rgba(7, 41, 77, .15); }
+
+/* ---------- Cards and grids ---------- */
+.items { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 1rem; }
+.items:has(> .panel) { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+.section-heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin: 2rem 0 .85rem; }
 .section-heading h2 { margin: 0; }
-.add-listing-card { display: flex; align-items: center; justify-content: center; min-height: 180px; padding: 1rem; border: 1px solid #ddd; border-radius: 3px; background: #fff; font-size: 3rem; text-decoration: none; }
-.add-listing-card:hover { background: #f3f3f3; border-color: #164675; }
-.items article { overflow-wrap: anywhere; }
+article, .panel { padding: 1rem 1.1rem; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); overflow-wrap: anywhere; }
+.panel { border-radius: 12px; padding: 1.25rem 1.4rem; }
+article h3, .panel h2 { margin-top: .25rem; }
+article h3 a { color: var(--ink); text-decoration: none; }
+article h3 a:hover { text-decoration: underline; }
+article p { margin: .2rem 0; }
+
+/* Buy-now cards on Home: photo first, then title, category, price, date */
+.listing-card { position: relative; padding: 0; overflow: hidden; }
+.listing-card > :not(.listing-image-placeholder) { margin-inline: .9rem; }
+.listing-card h3 { margin: .75rem .9rem .15rem; font-family: var(--body); font-size: 1rem; }
+.listing-card > :last-child { margin-bottom: .9rem; }
+.listing-card .listing-image-placeholder { margin: 0; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; }
+.listing-card .price { margin-top: .4rem; }
+/* Whole card opens the listing */
+.listing-card h3 a::after, #auction-list article h3 a::after { content: ""; position: absolute; inset: 0; }
+.listing-card:hover, #auction-list article:hover { border-color: var(--line-strong); }
+.listing-card:hover h3 a, #auction-list article:hover h3 a { text-decoration: underline; }
+.listing-card:focus-within, #auction-list article:focus-within { outline: 3px solid var(--link); outline-offset: 2px; }
+.listing-card a:focus-visible, #auction-list article a:focus-visible { outline: none; }
+.price { font-family: var(--display); font-size: 1.3rem; font-weight: 600; color: var(--ink); }
+
+/* Auction cards: gold edge marks a live auction; the bid line is the headline number */
+#auction-list article { position: relative; border-top: 4px solid var(--gold); }
+#auction-list article h3 { font-family: var(--body); font-size: 1rem; }
+#auction-list article p { color: var(--muted); font-size: .92rem; }
+#auction-list article p:last-child { margin-top: .6rem; color: var(--blue); font-family: var(--display); font-size: 1.15rem; font-weight: 600; }
+/* Auction detail: same gold edge, current bid stands out */
+#auction-detail article { margin-bottom: 1rem; padding: 1.25rem 1.4rem; border-top: 4px solid var(--gold); border-radius: 12px; }
+#auction-detail h1 a { color: var(--blue); text-decoration: none; }
+#auction-detail article p { color: var(--muted); }
+#auction-detail article p:nth-child(3) { max-width: 70ch; margin-bottom: .8rem; color: var(--ink); }
+#auction-detail article p:nth-last-child(2) { margin-top: .8rem; color: var(--blue); font-family: var(--display); font-size: 1.5rem; font-weight: 600; }
+
+.listing-image-placeholder { display: flex; align-items: center; justify-content: center; aspect-ratio: 1 / 1; max-height: 460px; margin-bottom: 1.25rem; border-radius: 8px; background: #e4e9f0; color: var(--muted); font-size: .95rem; }
+.add-listing-card { display: flex; align-items: center; justify-content: center; min-height: 180px; padding: 1rem; border: 2px dashed var(--line-strong); border-radius: 8px; color: var(--blue); font-size: 2.75rem; text-decoration: none; }
+.add-listing-card:hover { border-color: var(--blue); background: var(--surface); color: var(--blue); }
+
+/* ---------- Listing detail and purchase ---------- */
 .listing-detail { overflow-wrap: anywhere; }
-.listing-image-placeholder { display: flex; align-items: center; justify-content: center; aspect-ratio: 4 / 3; max-height: 360px; margin-bottom: 1.5rem; border: 1px dashed #aaa; border-radius: 3px; background: #f3f3f3; color: #626262; }
+#listing-details { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 2rem; align-items: start; }
+#listing-details .listing-image-placeholder { margin: 0; aspect-ratio: 4 / 3; max-height: none; }
+.listing-info > h2:first-child { margin-top: 0; }
+#listing-price { font-size: 2rem; }
+#listing-description, #purchase-description { white-space: pre-wrap; }
 #seller-preview-controls, #seller-information { margin-bottom: 1rem; }
-#listing-description { white-space: pre-wrap; }
-#purchase-description { white-space: pre-wrap; }
-.purchase-layout { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 1.5rem; align-items: start; }
-.purchase-layout button:disabled { opacity: .6; cursor: not-allowed; }
-.buyer-actions { margin: 1.5rem 0; padding-top: 1rem; border-top: 1px solid #ddd; }
+.buyer-actions { margin: 1.25rem 0; padding: 1rem 1.1rem; border-radius: 8px; background: var(--canvas); }
+.buyer-actions h2 { margin-top: 0; font-size: 1.1rem; }
 .buyer-buttons { display: flex; flex-wrap: wrap; gap: .75rem; }
-.secondary-button { color: #333; background: #fff; }
-.buyer-buttons button:disabled { opacity: .6; cursor: not-allowed; }
-.buyer-buttons button:disabled:hover { background: #333; }
-.buyer-buttons .secondary-button:disabled:hover { color: #333; background: #fff; }
-.delete-listing { background: #fff; color: #a12622; border-color: #a12622; }
-.delete-listing:hover { background: #a12622; color: #fff; }
-.delete-listing:disabled { opacity: .6; cursor: wait; }
-article, .panel { border: 1px solid #ddd; border-radius: 3px; padding: 1rem; }
-article { overflow-wrap: anywhere; }
-button:disabled { opacity: .6; cursor: wait; }
-article h3, .panel h2 { margin-top: .5rem; }
-.muted { color: #626262; }
-.status { padding: .75rem; background: #f3f3f3; }
-.status:empty { display: none; }
-.field-error { color: #a01818; }
+.buyer-buttons .button { border-radius: 999px; padding-inline: 1.5rem; }
+.purchase-layout { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 1.5rem; align-items: start; }
+#purchase-total { font-family: var(--display); font-size: 1.2rem; font-weight: 600; }
+#confirm-purchase { width: 100%; margin-top: .5rem; border-radius: 999px; }
+
+/* ---------- Forms ---------- */
+form { max-width: 560px; padding: 1.5rem; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+label { display: block; margin-bottom: 1rem; font-size: .95rem; font-weight: 600; }
+input, select, textarea, button, .button { font: inherit; }
+input, select, textarea { display: block; width: 100%; margin-top: .35rem; padding: .65rem .75rem; border: 1px solid #ccd0d5; border-radius: 6px; background: var(--surface); color: var(--ink); font-weight: 400; }
+input:focus, select:focus, textarea:focus { border-color: var(--link); }
+input[type="file"] { padding: .5rem; background: var(--canvas); }
+textarea { resize: vertical; }
+input[aria-invalid="true"] { border-color: var(--danger); }
+.field-error { margin-top: -.6rem; color: var(--danger); font-size: .9rem; }
 .field-error:empty { display: none; }
-input[aria-invalid="true"] { border-color: #a01818; }
-.skip-link { position: absolute; left: 1rem; top: -100px; background: white; padding: .5rem; }
-.skip-link:focus { top: 0; }
+form button[type="submit"] { width: 100%; margin-top: .25rem; }
+
+/* ---------- Buttons ---------- */
+button, .button { display: inline-flex; align-items: center; justify-content: center; gap: .4rem; padding: .6rem 1.1rem; border: 1px solid var(--blue); border-radius: 6px; background: var(--blue); color: #fff; font-family: var(--display); font-weight: 500; text-decoration: none; cursor: pointer; }
+button:hover, .button:hover { background: var(--blue-hover); color: #fff; }
+button:disabled { opacity: .55; cursor: wait; }
+.secondary-button { border-color: var(--line-strong); background: var(--surface); color: var(--blue); }
+.secondary-button:hover { border-color: var(--blue); background: var(--surface); color: var(--blue); }
+.purchase-layout button:disabled, .buyer-buttons button:disabled { cursor: not-allowed; }
+.buyer-buttons button:disabled:hover { background: var(--blue); }
+.buyer-buttons .secondary-button:disabled:hover { border-color: var(--line-strong); background: var(--surface); color: var(--blue); }
+.delete-listing { margin-top: .75rem; border-color: var(--danger); background: var(--surface); color: var(--danger); }
+.delete-listing:hover { background: var(--danger); color: #fff; }
+.delete-listing:disabled { cursor: wait; }
+
+/* ---------- Status messages ---------- */
+.status { padding: .7rem .9rem; border-radius: 6px; background: var(--info); color: var(--blue); }
+.status:empty { display: none; }
+
+/* ---------- Dashboard and profile ---------- */
 .wallet { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin: 0; }
-.wallet[hidden] { display: none; }
-.wallet div { border: 1px solid #ddd; border-radius: 3px; padding: 1rem; }
-.wallet dt { color: #626262; }
-.wallet dd { margin: .25rem 0 0; font-size: 1.35rem; font-weight: bold; }
-.details { display: grid; grid-template-columns: max-content 1fr; gap: .5rem 1.5rem; }
-.details dt { font-weight: bold; }
+.wallet div { padding: 1rem 1.2rem; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.wallet div:last-child { border-color: var(--gold); background: var(--gold-tint); }
+.wallet dt { color: var(--muted); font-size: .92rem; }
+.wallet dd { margin: .2rem 0 0; color: var(--blue); font-family: var(--display); font-size: 1.75rem; font-weight: 600; }
+.details { display: grid; grid-template-columns: max-content 1fr; gap: .6rem 1.5rem; max-width: 640px; padding: 1.25rem 1.4rem; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.details dt { color: var(--muted); font-weight: 500; }
 .details dd { margin: 0; overflow-wrap: anywhere; }
-.history-entry + .history-entry { margin-top: .75rem; padding-top: .25rem; border-top: 1px solid #ddd; }
-.history-entry h3 { margin: .5rem 0 .25rem; }
-.history-entry p { margin: .2rem 0; }
+.history-entry + .history-entry { margin-top: .75rem; padding-top: .5rem; border-top: 1px solid var(--line); }
+.history-entry h3 { margin: .4rem 0 .2rem; font-family: var(--body); font-size: 1rem; }
+.history-entry h3 a { color: var(--ink); }
+.history-entry p { margin: .15rem 0; color: var(--muted); font-size: .92rem; }
 #name-message:empty { display: none; }
 #name-form button { margin-top: .75rem; }
-@media (max-width: 650px) {
-  .purchase-layout { grid-template-columns: 1fr; }
-  .items { grid-template-columns: 1fr; }
-  .wallet { grid-template-columns: 1fr; }
-  main { padding-top: 1.5rem; }
-  nav { gap: .5rem 1rem; }
+
+/* ---------- Small screens ---------- */
+@media (max-width: 700px) {
+  header { gap: .5rem; padding-block: .55rem .4rem; }
+  .brand { font-size: 1.2rem; }
+  .sell-link { order: 2; }
+  header nav { order: 3; width: 100%; margin-inline: -.5rem; }
+  header nav a { padding: .4rem .55rem; font-size: .95rem; }
+  header > p { order: 4; }
+  h1 { font-size: 1.65rem; }
+  main { padding-top: 1.25rem; }
+  .drexel-only { font-size: .85rem; }
+  .items, .items:has(> .panel) { grid-template-columns: 1fr; gap: .75rem; }
+  /* Photo cards stay two across, like a phone marketplace feed */
+  #recent-listings, #current-listings { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .listing-card h3, .listing-card > :not(.listing-image-placeholder) { margin-inline: .7rem; }
+  .listing-card h3 { font-size: .95rem; }
+  .price { font-size: 1.1rem; }
+  #listing-details, .purchase-layout, .wallet { grid-template-columns: 1fr; }
+  form { padding: 1.1rem; }
 }

@@ -9,6 +9,7 @@ async function loadRecentListings() {
     const { listings } = await response.json();
     for (const listing of listings) {
       const card = document.createElement('article');
+      card.className = 'listing-card';
       const image = document.createElement('div');
       image.className = 'listing-image-placeholder';
       image.textContent = 'No photos yet';
@@ -18,10 +19,13 @@ async function loadRecentListings() {
       link.textContent = listing.title;
       title.append(link);
       const category = document.createElement('p');
+      category.className = 'muted';
       category.textContent = listing.category;
       const price = document.createElement('p');
+      price.className = 'price';
       price.textContent = currency.format(listing.price_cents / 100);
       const posted = document.createElement('p');
+      posted.className = 'muted';
       const date = document.createElement('time');
       date.dateTime = listing.created_at;
       date.textContent = `Posted ${new Date(listing.created_at).toLocaleDateString()}`;
