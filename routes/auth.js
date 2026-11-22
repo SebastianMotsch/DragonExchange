@@ -1,5 +1,6 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
+const { rateLimit } = require("express-rate-limit");
 const db = require("../db");
 const registrationLimiter = require("../middleware/registration-limiter");
 const router = express.Router();
@@ -126,8 +127,93 @@ router.post("/register", registrationLimiter, async function (req, res) {
   }
 });
 
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  skipSuccessfulRequests: true,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many login attempts. Try again in 15 minutes." }
+});
+
+router.post("/login", loginLimiter, async function (req, res) {
+  if (!req.session) {
+    return res.status(503).json({ error: "Login is temporarily unavailable." });
+  }
+
+  const { email, password } = req.body || {};
+  if (typeof email !== "string" || !email.trim() ||
+      typeof password !== "string" || !password ||
+      Buffer.byteLength(password, "utf8") > maxPasswordBytes) {
+    return res.status(400).json({ error: "Enter your Drexel email and password." });
+  }
+
+  try {
+    const { rows: [user] } = await db.query(
+      "SELECT id, password_hash, verified FROM users WHERE email = $1",
+      [email.trim().toLowerCase()]
+    );
+    if (!user || !(await bcrypt.compare(password, user.password_hash))) {
+      return res.status(401).json({ error: "Invalid email or password." });
+    }
+    if (!user.verified) {
+      return res.status(403).json({ error: "Verify your Drexel email before logging in." });
+    }
+
+    await new Promise((resolve, reject) => {
+      req.session.regenerate(error => error ? reject(error) : resolve());
+    });
+    req.session.userId = user.id;
+    await new Promise((resolve, reject) => {
+      req.session.save(error => error ? reject(error) : resolve());
+    });
+    return res.sendStatus(204);
+  } catch {
+    return res.status(503).json({ error: "Login is temporarily unavailable." });
+  }
+});
+
+router.get("/me", async function (req, res) {
+  res.set("Cache-Control", "no-store");
+  if (!req.session?.userId) {
+    return res.status(401).json({ error: "Log in to continue." });
+  }
+
+  try {
+    const { rows: [user] } = await db.query(
+      "SELECT id, name, email, verified FROM users WHERE id = $1",
+      [req.session.userId]
+    );
+    if (!user) {
+      return res.status(401).json({ error: "Log in to continue." });
+    }
+    return res.json({ user });
+  } catch {
+    return res.status(503).json({ error: "Account information is unavailable." });
+  }
+});
+
+router.post("/logout", async function (req, res) {
+  if (req.get("X-Requested-With") !== "DragonExchange") {
+    return res.status(403).json({ error: "Use the sign out button." });
+  }
+
+  const sessionId = req.sessionID;
+  try {
+    if (req.session) {
+      await new Promise((resolve, reject) => {
+        req.session.destroy(error => error ? reject(error) : resolve());
+      });
+    }
+  } catch {
+    return res.status(503).json({ error: "Could not sign out. Please try again." });
+  }
+
+  req.app.locals.io?.in("session:" + sessionId).disconnectSockets(true);
+  res.clearCookie("connect.sid");
+  return res.sendStatus(204);
+});
+
 // TODO: POST /verify    - check code, set verified = true
-// TODO: POST /login     - bcrypt.compare, block unverified, set req.session.userId
-// TODO: POST /logout    - req.session.destroy()
 
 module.exports = router;

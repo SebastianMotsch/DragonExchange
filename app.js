@@ -87,6 +87,11 @@ function createApp({
     }
   });
   const publicDirectory = path.join(__dirname, "public");
+  app.get("/auth/login.html", (req, res, next) => {
+    res.set("Cache-Control", "no-store");
+    if (req.session?.userId) return res.redirect("/account/dashboard.html");
+    next();
+  });
   app.get(
     [
       "/auctions/create.html",

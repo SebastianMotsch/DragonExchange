@@ -50,8 +50,9 @@ header :focus-visible { outline-color: var(--gold); }
 .brand::before { content: "DX"; content: "DX" / ""; display: grid; place-items: center; width: 2.1rem; height: 2.1rem; border-radius: 6px; background: var(--gold); color: var(--blue); font-size: .95rem; font-weight: 700; }
 .brand:hover { color: #fff; }
 header nav { display: flex; flex-wrap: wrap; align-items: center; gap: .15rem; }
-header nav a { padding: .45rem .75rem; border-radius: 6px; color: rgba(255, 255, 255, .86); font-weight: 500; text-decoration: none; }
-header nav a:hover { background: rgba(255, 255, 255, .1); color: #fff; }
+header nav a, header nav button { padding: .45rem .75rem; border-radius: 6px; color: rgba(255, 255, 255, .86); font-weight: 500; text-decoration: none; }
+header nav button { border: 0; background: transparent; }
+header nav a:hover, header nav button:hover { background: rgba(255, 255, 255, .1); color: #fff; }
 header nav a[aria-current="page"] { color: #fff; text-decoration: underline 3px var(--gold); text-underline-offset: 8px; }
 .sell-link { display: inline-flex; align-items: center; gap: .35rem; padding: .5rem 1.15rem; border-radius: 999px; background: var(--gold); color: var(--blue); font-family: var(--display); font-weight: 600; text-decoration: none; }
 .sell-link::before { content: "+"; content: "+" / ""; font-size: 1.2rem; line-height: 1; }
@@ -186,7 +187,7 @@ button:disabled { opacity: .55; cursor: wait; }
   .brand { font-size: 1.2rem; }
   .sell-link { order: 2; }
   header nav { order: 3; width: 100%; margin-inline: -.5rem; }
-  header nav a { padding: .4rem .55rem; font-size: .95rem; }
+  header nav a, header nav button { padding: .4rem .55rem; font-size: .95rem; }
   header > p { order: 4; }
   h1 { font-size: 1.65rem; }
   main { padding-top: 1.25rem; }

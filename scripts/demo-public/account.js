@@ -42,27 +42,8 @@ if (!loginForm) {
         const response = await fetch("/auth/me");
         if (!response.ok) return;
         const { user } = await response.json();
-        const loginLink = header.querySelector('a[href$="auth/login.html"]');
-        if (loginLink) loginLink.hidden = true;
         const bar = document.createElement("p");
-        bar.textContent = "Signed in as " + user.name + " ";
-        const logout = document.createElement("button");
-        logout.textContent = "Log out";
-        logout.addEventListener("click", async () => {
-          logout.disabled = true;
-          try {
-            const response = await fetch("/auth/logout", {
-              method: "POST",
-              headers: { "X-Requested-With": "DragonExchange" },
-            });
-            if (!response.ok) throw new Error();
-            location.assign("/auth/login.html");
-          } catch {
-            logout.disabled = false;
-            logout.textContent = "Retry logout";
-          }
-        });
-        bar.append(logout);
+        bar.textContent = "Signed in as " + user.name;
         header.append(bar);
       } catch {}
     })();

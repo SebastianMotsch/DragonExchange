@@ -24,9 +24,7 @@ Open http://localhost:3000. `/health` checks the app; `/health/db` queries the c
 
 ## Accounts and auction creation
 
-Edric's registration routes, form, and login page are included unchanged from his branch. Production login/logout and verification remain his integration work. This branch consumes the agreed `req.session.userId` interface, shares the session with auction sockets, and guards the auction-create page. It does not replace the account-page middleware or dashboard work.
-
-**Production login and email verification are not complete in the published auth branch.** Normal `npm start` uses Edric's routes, including his existing TODOs. The authenticated auction flow is ready to consume his session once that work is merged. Use the isolated demo below to test auction behavior now; its auth adapter is confined to `scripts/` and is never mounted by the normal server.
+Verified Drexel accounts can log in at `/auth/login.html` and sign out from the navigation. Email verification for new accounts is still pending.
 
 A verified seller opens Sell > Auction, supplies title, description, category, starting price, and a future deadline, and submits. The backend derives the seller from `req.session.userId` and rechecks verification. The saved auction opens on its detail page and appears in the homepage's most recent 50 non-cancelled auctions.
 
@@ -36,7 +34,7 @@ Prices are stored as integer cents. The form converts local deadlines to UTC; da
 
 The implementation adapts the professor's `../ws/ws/src/server.js` and `game.html` pattern: `createServer(app)`, `new Server(server)`, `socket.join(room)`, and `io.to(room).emit(...)`.
 
-It uses Socket.IO's WebSocket transport and shares Express's Postgres-backed login session. Session and verification checks reject unauthorized handshakes. Browser origins must match the app origin. Active sockets recheck session validity and verification. Edric's logout route can immediately disconnect a session with `req.app.locals.io?.in("session:" + req.sessionID).disconnectSockets(true)`; otherwise the periodic check detects a destroyed session.
+It uses Socket.IO's WebSocket transport and shares Express's Postgres-backed login session. Session and verification checks reject unauthorized handshakes. Browser origins must match the app origin. Active sockets recheck session validity and verification. Signing out immediately disconnects the session's sockets.
 
 - `JOIN_AUCTION_ROOM { auctionId }` joins `auction:<id>` and acknowledges with current database state.
 - `LEAVE_AUCTION_ROOM` unsubscribes.
@@ -80,7 +78,8 @@ Ctrl+C stops the server and discards demo data. Use the three seeded accounts; r
 - `GET /api/auctions/:id`: public auction details or 404.
 - `POST /api/auctions`: verified-session creation; JSON and `X-Requested-With: DragonExchange` required.
 - `GET /api/wallet`: current session's total, reserved, and available balance.
-- `POST /auth/register`: Edric's existing registration endpoint. His login/logout/verification TODOs remain unchanged. The demo provides its own login/logout/current-user endpoints for isolated auction testing only.
+- `POST /auth/register`: creates an account pending email verification.
+- `POST /auth/login`: starts a session for a verified account.
 
 RLS is enabled on auctions, bids, and wallets with no browser API policies. All feature access goes through Express/Socket.IO and a trusted owner/BYPASSRLS database connection. Do not expose that connection or enable permissive CORS. Express sessions are not Supabase Auth JWTs; this implementation does not use Supabase Realtime.
 
@@ -90,8 +89,8 @@ RLS is enabled on auctions, bids, and wallets with no browser API policies. All 
 npm test
 ```
 
-Tests run without Supabase using isolated PGlite databases, real migrations, HTTP requests, bcrypt, cookie sessions, and multiple Socket.IO clients. Edric's registration tests run unchanged. Auction tests use the demo auth adapter to cover authenticated creation, invalid input, ownership/verification, handshake rejection, room isolation, concurrent spending, duplicate requests, holds, reconnect state, logout, and RLS. They do not prove his eventual login/verification implementation works. PGlite serializes its single connection; true multi-connection locking must also be checked against Postgres.
+Tests run without Supabase using isolated PGlite databases, real migrations, HTTP requests, bcrypt, cookie sessions, and multiple Socket.IO clients. Edric's registration tests run unchanged. Auction tests use the demo auth adapter to cover authenticated creation, invalid input, ownership/verification, handshake rejection, room isolation, concurrent spending, duplicate requests, holds, reconnect state, logout, and RLS. PGlite serializes its single connection; true multi-connection locking must also be checked against Postgres.
 
 The auction/database work was additionally checked against shared Supabase using temporary verified test accounts, an auth adapter, real HTTP sessions, socket broadcasts, and competing Postgres transactions. The test fixtures were removed afterward. Browser checks used demo auth and covered creation, two competing bidders, refresh, logout, and mobile layout.
 
-Remaining integration work: Edric's actual login/verification/logout, funding/deposits/withdrawals, auction cancellation/settlement, and team listing/photo/dashboard integration. This branch includes main plus Edric's existing registration commits; Steven's fixed-price backend and Sebastian's photo helpers are not merged here. Shared integration files (`server.js`, `app.js`, homepage, and package manifests) will still need coordination when those branches merge.
+Remaining integration work includes email verification, funding/deposits/withdrawals, auction cancellation/settlement, and team listing/photo/dashboard integration. This branch includes main plus Edric's existing registration commits; Steven's fixed-price backend and Sebastian's photo helpers are not merged here. Shared integration files (`server.js`, `app.js`, homepage, and package manifests) will still need coordination when those branches merge.
