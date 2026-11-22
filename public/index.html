@@ -7,7 +7,6 @@
   <title>Home | DragonExchange</title>
   <link rel="stylesheet" href="assets/css/style.css">
   <script src="/assets/js/script.js" defer></script>
-  <script src="assets/js/auctions.js" defer></script>
   <script src="assets/js/home.js" defer></script>
 </head>
 <body>
@@ -28,13 +27,53 @@
       <p>Textbooks, furniture, electronics, and more from other Drexel students. Bid on live auctions or buy at a set price.</p>
       <p class="drexel-only">Only @drexel.edu accounts can join</p>
     </div>
-    <h2>Live auctions</h2>
-    <p id="auction-status" class="status" role="status" aria-live="polite">Loading auctions…</p>
-    <div id="auction-list" class="items"></div>
-    <h2>Buy now</h2>
-    <p id="recent-listings-status" role="status">Loading recent listings…</p>
-    <div id="recent-listings" class="items" aria-busy="true"></div>
-    <noscript><p>Enable JavaScript to see recent listings.</p></noscript>
+    <h2>Marketplace listings</h2>
+    <form id="listing-filters" class="marketplace-search" method="get" role="search" aria-label="Marketplace listings">
+      <div class="listing-search-bar">
+        <input type="search" name="q" maxlength="150" aria-label="Search listings" placeholder="Search titles or descriptions">
+        <button type="submit">Search</button>
+        <button type="button" id="listing-filter-toggle" class="secondary-button" aria-controls="listing-filter-panel" aria-expanded="false">Filters</button>
+      </div>
+      <div id="listing-filter-panel" class="listing-filters" hidden>
+        <label>Category
+          <select name="category">
+            <option value="">All categories</option>
+            <option>Books</option>
+            <option>Electronics</option>
+            <option>Furniture</option>
+            <option>Clothing</option>
+            <option>Other</option>
+          </select>
+        </label>
+        <label>Sale type
+          <select name="type">
+            <option value="">All sale types</option>
+            <option value="auction">Auction</option>
+            <option value="fixed">Buy now</option>
+          </select>
+        </label>
+        <label>Minimum price ($) <input name="min" type="text" inputmode="decimal" maxlength="11" pattern="[0-9]{1,8}([.][0-9]{1,2})?"></label>
+        <label>Maximum price ($) <input name="max" type="text" inputmode="decimal" maxlength="11" pattern="[0-9]{1,8}([.][0-9]{1,2})?"></label>
+        <label>Sort by
+          <select name="sort">
+            <option value="newest">Newest first</option>
+            <option value="price-asc">Lowest price</option>
+            <option value="price-desc">Highest price</option>
+          </select>
+        </label>
+        <div class="listing-filter-actions">
+          <button type="submit">Apply filters</button>
+          <a href="index.html">Clear filters</a>
+        </div>
+      </div>
+    </form>
+    <p id="marketplace-status" class="status" role="status">Loading listings…</p>
+    <div id="marketplace-results" class="items" aria-busy="true"></div>
+    <nav class="marketplace-pagination" aria-label="Listing pages">
+      <a id="marketplace-previous" hidden>Previous page</a>
+      <a id="marketplace-next" hidden>Next page</a>
+    </nav>
+    <noscript><p>Enable JavaScript to see listings.</p></noscript>
   </main>
 
 </body>

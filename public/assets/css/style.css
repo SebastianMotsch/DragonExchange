@@ -201,3 +201,62 @@ button:disabled { opacity: .55; cursor: wait; }
   #listing-details, .purchase-layout, .wallet { grid-template-columns: 1fr; }
   form { padding: 1.1rem; }
 }
+.marketplace-search {
+  width: 100%;
+  max-width: none;
+}
+
+.listing-search-bar {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.listing-search-bar input[type="search"] {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+}
+
+.marketplace-search .listing-search-bar button {
+  width: auto;
+  margin: 0;
+  padding-inline: clamp(0.5rem, 2vw, 1.1rem);
+  white-space: nowrap;
+}
+
+.listing-filters:not([hidden]) {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
+  gap: 0.75rem;
+  align-items: end;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+
+.listing-filters label {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.listing-filters :is(input, select) {
+  width: 100%;
+  min-width: 0;
+}
+
+.listing-filter-actions,
+.marketplace-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+}
+
+.marketplace-search .listing-filter-actions button {
+  width: auto;
+  margin: 0;
+}
+
+.marketplace-pagination:not(:has(a:not([hidden]))) {
+  display: none;
+}
